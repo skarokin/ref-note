@@ -5,7 +5,7 @@ import Logout from '@/components/Logout';
 
 const Dashboard = async () => {
 
-    const session = await auth();
+    const session = await auth(); // auth check == session exists or not
 
     if (!session?.user) redirect('/');
     return (

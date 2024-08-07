@@ -2,7 +2,7 @@
 import { signIn, signOut } from '@/auth';
 
 export async function handleLogin(formData: FormData) {
-    const action = formData.get('action')?.toString();
+    const action = formData.get('action')?.toString(); // provider name 
     await signIn(action, { redirectTo: "/dashboard" });
 }
 
