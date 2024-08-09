@@ -1,12 +1,23 @@
 const Footer = () => {
     return (
-        <footer className="absolute bottom-2.5 text-xs/3 sm:text-xs/6 bottom-2">
-			<small className="font-thin px-1">by Isaac Nguyen & Sean Kim</small>
-			<a href="https://github.com/akuwuh/ref-note" className="px-1">
-				<small>
+        <footer className="absolute bottom-2.5 text-xs/3 sm:text-xs/6 bottom-2 flex flex-col items-center">
+			<small>
+				<a href="https://github.com/akuwuh/ref-note" target="_blank" className="hover:underline">
 					GitHub
-				</small>
-			</a>
+				</a>
+			</small>
+			<small className="font-thin">by&nbsp;
+				<a
+					className="hover:underline"
+					href="https://github.com/akuwuh" 
+					target="_blank">Isaac Nguyen
+				</a> &&nbsp;
+				<a 
+					className="hover:underline"
+					href="https://github.com/skarokin" 
+					target="_blank">Sean Kim
+				</a>
+			</small>
 		</footer>
     )
 }
