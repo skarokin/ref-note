@@ -30,7 +30,7 @@ func (h *Handler) RegisterRoutes(router *mux.Router) {
 // upon sign in, check if user exists in db. if not, create their account.
 // return user data (jwt handled by nextauth)
 func (h *Handler) SignIn(w http.ResponseWriter, r *http.Request) {
-	// extract username from request; no payload this is a GET request
+	// extract the {username} from the GET request URL
 	vars := mux.Vars(r)
 	username := vars["username"]
 

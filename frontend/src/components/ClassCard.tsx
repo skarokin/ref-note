@@ -1,12 +1,9 @@
-"use client";               // client side component because it uses 
+import { redirect } from 'next/navigation';
 
-import { useRouter } from 'next/navigation';
-
-// component to display all details of a classID
-// details are fetched from database upon dashboard load
+// temp; not implemented yet
 const ClassCard = ({
     creatorUsername,     // only display creator if user is not the creator (we will determine this when fetching data)
-    classID,             // for redirecting on click, not displayed
+    classID,             
     className,                       
     professor,                  
     location,
@@ -25,14 +22,12 @@ const ClassCard = ({
     numberNotes: number,
     lastUpdated: string,
 }) => {
-    const slug = classID.toLowerCase();
-    const router = useRouter();
 
     return (
         <div className="my-4 border rounded-md p-4 w-1/2 sm:w-3/4">
             <h1
                 className="text-md sm:text-lg"
-                onClick={() => router.push(`/class/${slug}`)}
+                onClick={() => redirect(`/class/${classID}`)} 
             >
                 {creatorUsername ? `${creatorUsername} | ${className}` : className}
             </h1>
