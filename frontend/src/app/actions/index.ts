@@ -1,14 +1,31 @@
 "use server"
-import { signIn, signOut, auth } from '@/auth';
+import { signIn, signOut } from '@/auth';
+import { Session } from 'next-auth';
 
 export async function handleLogin(formData: FormData) {
     const action = formData.get('action')?.toString(); 
-    const session = await auth();
-    const username = session?.user?.email?.replace('@gmail.com', '');
-    // since this is just a fun little project it assumes that the only domain possible is gmail.com
-    await signIn(action, { redirectTo: `/user/${username}` });
+    await signIn(action, { redirectTo: `/dashboard` });
 }
 
 export async function handleLogout() {
   await signOut({ redirectTo: "/" });
+}
+
+export async function loadClass(session: Session | null, classID: string | null) {
+  const username = session?.user?.username;
+  
+  const res = await fetch(`http://localhost:8080/getClass/${classID}`);
+  if (!res.ok) {
+    throw new Error('Network response was not ok');
+  }
+
+  const classInfo = await res.json();
+
+  for (const user of classInfo.usersWithAccess) {
+    if (user === username) {
+      return classInfo;
+    }
+  }
+
+  return null;
 }

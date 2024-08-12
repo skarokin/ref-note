@@ -6,10 +6,9 @@ import { auth } from '@/auth';
 export default async function Home() {
 	// if user is already logged in, redirect to their dashboard
 	const session = await auth();
-	const username = session?.user?.email?.replace('@gmail.com', '');
 
 	if (session?.user) {
-		redirect('/user/' + username);
+		redirect('/dashboard/');
 	}
 
 	return (

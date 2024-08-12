@@ -1,4 +1,3 @@
-
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 
@@ -17,15 +16,15 @@ export const {handlers, signIn, signOut, auth } = NextAuth({
         }),
     ],
     callbacks: {
-        jwt({ token, user }) {
-            if (user) {
-                token.id = user.id;
-            }
-            return token;
-        },
-        session({ session, token }) {
-            session.user.id = token.id as string;
+        session({ session }) {
+            (session.user as AdapterUser).username = session.user.email.split("@")[0];
             return session;
         }
     }
 });
+
+// we want to have username field in the session object so we must extend the User type (AdapterUser already extends User so
+// we are just adding the username field)
+interface AdapterUser {
+    username?: string;
+}

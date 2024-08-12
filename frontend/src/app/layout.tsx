@@ -13,7 +13,6 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "ref:note",
   description: "student-focused collaborative notes",
-  
 };
 
 export default function RootLayout({

@@ -98,20 +98,22 @@ func (h *Handler) SignIn(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) ChangeUsername(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 	if err != nil {
+		fmt.Println("Error parsing form:", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	newUsername := r.FormValue("newUsername")
 	if newUsername == "" {
+		fmt.Println("newUsername is required")
 		http.Error(w, "newUsername is required", http.StatusBadRequest)
 		return
 	}
 
 	// the userID is their gmail address w/o the domain
-	userID := r.FormValue("userID")
+	username := r.FormValue("username")
 
-	_, err = h.firestoreClient.Collection("users").Doc(userID).Set(r.Context(), map[string]interface{}{
+	_, err = h.firestoreClient.Collection("users").Doc(username).Set(r.Context(), map[string]interface{}{
 		"username": newUsername,
 	}, firestore.MergeAll)
 	if err != nil {
