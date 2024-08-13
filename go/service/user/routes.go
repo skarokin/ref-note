@@ -7,8 +7,6 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/akuwuh/ref-note/utils"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"cloud.google.com/go/firestore"
 )
 
@@ -25,11 +23,10 @@ func NewHandler(firestoreClient *firestore.Client) *Handler {
 func (h *Handler) RegisterRoutes(router *mux.Router) {
 	router.HandleFunc("/signin/{username}", h.SignIn).Methods("GET").Name("signin")
 	router.HandleFunc("/changeUsername", h.ChangeUsername).Methods("POST")
-	router.HandleFunc("/deleteAccount/{username}", h.DeleteAccount).Methods("DELETE").Name("deleteAccount")
+	router.HandleFunc("/deleteUser/{username}", h.DeleteUser).Methods("DELETE").Name("deleteUser")
 }
 
-// upon sign in, check if user exists in db. if not, create their account.
-// return user data (jwt handled by nextauth)
+// display dashboard data for user upon signin (fetches user data and data for classes they have access to)
 func (h *Handler) SignIn(w http.ResponseWriter, r *http.Request) {
 	// extract the {username} from the GET request URL
 	vars := mux.Vars(r)
@@ -37,27 +34,25 @@ func (h *Handler) SignIn(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Println("Username:", username)
 
-	_, err := h.firestoreClient.Collection("users").Doc(username).Get(r.Context())
-	// codes.NotFound is a constant from google.golang.org/grpc/codes. This is how we check if a doc exists in firestore
-	// so, if there is an error AND the error code is NotFound then the user does not exist and we should create their account
+	userExists, err := utils.CheckUserExists(username, h.firestoreClient, r.Context())
 	if err != nil {
-		if status.Code(err) == codes.NotFound {
-			fmt.Println("User does not exist, creating account with default name:", username)
-			_, err := h.firestoreClient.Collection("users").Doc(username).Set(r.Context(), map[string]interface{}{
-				"username": username,
-				"classesWithAccessTo": []string{},
-			})
-			if err != nil {
-				fmt.Println("Error creating user:", err)
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-			fmt.Println("User created successfully")
-		} else {
-			fmt.Println("Error checking if user exists:", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// if user does not exist, create an account for them
+	if !userExists {
+		fmt.Println("User does not exist, creating account with default name:", username)
+		_, err := h.firestoreClient.Collection("users").Doc(username).Set(r.Context(), map[string]interface{}{
+			"username": username,
+			"classesWithAccessTo": []string{},
+		})
+		if err != nil {
+			fmt.Println("Error creating user:", err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+		fmt.Println("User created successfully")
 	} else {
 		fmt.Println("User exists already")
 	}
@@ -73,18 +68,25 @@ func (h *Handler) SignIn(w http.ResponseWriter, r *http.Request) {
 	// store user data (for later use)
 	userDataRes := userData.Data()
 
+	// get all classes user has access to
+	classesWithAccessTo, err := utils.GetClassesWithAccessTo(username, h.firestoreClient, r.Context())
+	if err != nil {
+		fmt.Println("Error getting classes with access to:", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	classesWithAccessToRes := map[string]interface{}{}
-	// loop through each class with access to
-	for _, classID := range userDataRes["classesWithAccessTo"].([]interface {}) {
-		classID := classID.(string)
-		classData, err := h.firestoreClient.Collection("classes").Doc(classID).Get(r.Context())
+	// loop through each class with access to and get the data
+	for _, classID := range classesWithAccessTo {
+		classData, err := utils.GetClassData(classID, h.firestoreClient, r.Context())
 		if err != nil {
 			fmt.Println("Error getting class data:", err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		classesWithAccessToRes[classID] = classData.Data()
+		classesWithAccessToRes[classID] = classData
 	}
 
 	// finally, we return user data and classes they have access to
@@ -96,6 +98,8 @@ func (h *Handler) SignIn(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// does not affect userID so no need to propagate to other collections
+// this is a unique operation so no need to make it in utils
 func (h *Handler) ChangeUsername(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 	if err != nil {
@@ -125,32 +129,36 @@ func (h *Handler) ChangeUsername(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func (h *Handler) DeleteAccount(w http.ResponseWriter, r *http.Request) {
+// if user is owner of a class, delete the class. else, remove them from class usersWithAccess array
+func (h *Handler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	username := vars["username"]
 
 	fmt.Println("Username:", username)
 
+	// if user does not exist, can't delete them
 	userExists, err := utils.CheckUserExists(username, h.firestoreClient, r.Context()) // boolean 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	} 	
 
-	var classes []string{}
 	if userExists {
-		classes, err = utils.GetClasses(username, h.firestoreClient, r.Context())
+		classesWithAccessTo, err := utils.GetClassesWithAccessTo(username, h.firestoreClient, r.Context())
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		err = utils.DeleteUserClasses(username, classes, h.firestoreClient, r.Context())
+		err = utils.DeleteUserClasses(username, classesWithAccessTo, h.firestoreClient, r.Context())
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return 
 		}
 	}
+
+	// finally, delete the user
+	_, err = h.firestoreClient.Collection("users").Doc(username).Delete(r.Context())
 
 	w.WriteHeader(http.StatusOK)
 }

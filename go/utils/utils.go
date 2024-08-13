@@ -1,12 +1,15 @@
 package utils
 
 import (
+	"context"
+
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"cloud.google.com/go/firestore"
+	"google.golang.org/api/iterator"
 )
 
-func CheckUserExists(username string, firestoreClient *firestore.Client, ctx Context) (bool, error) {
+func CheckUserExists(username string, firestoreClient *firestore.Client, ctx context.Context) (bool, error) {
 	_, err := firestoreClient.Collection("users").Doc(username).Get(ctx) // queries users collection for document username
 	
 	if err != nil {
@@ -20,62 +23,139 @@ func CheckUserExists(username string, firestoreClient *firestore.Client, ctx Con
 	}
 }
 
-// assume user exists
-func GetClasses(username string, firestoreClient *firestore.Client, ctx Context) ([]string, error) {
-	userData, err := h.firestoreClient.Collection("users").Doc(username).Get(ctx)
-	if err != nil { // error getting user (some error)
+// assume user exists; doesnt return the data of the class but returns what classID the user can access
+func GetClassesWithAccessTo(username string, firestoreClient *firestore.Client, ctx context.Context) ([]string, error) {
+	userData, err := firestoreClient.Collection("users").Doc(username).Get(ctx)
+	if err != nil { 
 		return []string{}, err
 	}
 
-	userDataRes := userData.Data() // response
+	var classesWithAccessTo []string
 
-	classesWithAccessToRes := []string{}
-	
-	for _, classID := range userDataRes["classesWithAccessTo"].([]interface {}) {
+	// this is weird but necessary to extract string values from the interface array
+	for _, classID := range userData.Data()["classesWithAccessTo"].([]interface {}) {
 		classID := classID.(string)
-		classData, err := h.firestoreClient.Collection("classes").Doc(classID).Get(ctx)
-		if err != nil {
-			return []string{}, err
-		}
-
-		classesWithAccessToRes = append(classesWithAccessToRes, classID)
+		classesWithAccessTo = append(classesWithAccessTo, classID)
 	}
 
-	return classesWithAccessToRes, nil
+	return classesWithAccessTo, nil
 }
 
-// assume user exists
-func DeleteUserClasses(username string, classes []string, firestoreClient *firestore.Client, ctx Context) error {
+// extract class data from firestore, assumes class exists
+func GetClassData(classID string, firestoreClient *firestore.Client, ctx context.Context) (map[string]interface{}, error) {
+	classData, err := firestoreClient.Collection("classes").Doc(classID).Get(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return classData.Data(), nil
+}
+
+// assume user exists. this handles class deletion if user is creator, or user leaving class if not creator
+func DeleteUserClasses(username string, classes []string, firestoreClient *firestore.Client, ctx context.Context) error {
+	// for each class, check if user is creator. if they are, delete the class. else, remove user from usersWithAccess
 	for _, classID := range classes {
-		classID := classID.(string)
-		classData, err := h.firestoreClient.Collection("classes").Doc(classID).Get(ctx)
+		classData, err := firestoreClient.Collection("classes").Doc(classID).Get(ctx)
 		if err != nil {
 			return err
 		}
-		creatorID := classData["creatorID"]
 
-		if username != creatorID { // they dont own it, remove 
+		classDataRes := classData.Data()		
+		creatorID := classDataRes["creatorID"]
+
+		// if not creator, remove access (update usersWithAccess for classes/classID)
+		// if they ARE the creator, delete the class itself
+		if username != creatorID { 
 			var newUsersAccessArray []string
-			for _, userWithAccess := range classData["usersWithAccess"] {
+			for _, userWithAccess := range classDataRes["usersWithAccess"].([]interface {}) {
+				userWithAccess := userWithAccess.(string)
 				if username != userWithAccess {
 					newUsersAccessArray = append(newUsersAccessArray, userWithAccess)
 				} 
 			}
 
-			classData["usersWithAccess"] = newUsersAccessArray
-			_, err := h.firestoreClient.Collection("classes").Doc(classID).Update(ctx, []firestore.Update{
-				{
-					usersWithAccess: newUsersAccessArray,
-				},
-			})
+			_, err := firestoreClient.Collection("classes").Doc(classID).Update(ctx, []firestore.Update{
+                {
+                    Path:  "usersWithAccess",
+                    Value: newUsersAccessArray,
+                },
+            })
 			if err != nil {
 				return err
 			}
-		} else { // delete class 
-			_, err := firestoreClient.Collection("classes").Doc(classID).Delete(ctx)
+		} else { 
+			err := DeleteClass(classID, firestoreClient, ctx)
 			if err != nil {
 				return err
 			}
+
+		}
+	}
+
+	return nil
+}
+
+// assumes classID exists
+func DeleteClass(classID string, firestoreClient *firestore.Client, ctx context.Context) error {
+
+	classData, err := GetClassData(classID, firestoreClient, ctx)
+
+	// for each user with access to the class, remove the class from their classesWithAccessTo
+	for _, userWithAccess := range classData["usersWithAccess"].([]interface {}) {
+		userWithAccess := userWithAccess.(string)
+		classesWithAccessTo, err := GetClassesWithAccessTo(userWithAccess, firestoreClient, ctx)
+		if err != nil {
+			return err
+		}
+
+		newClassesWithAccessTo := []string{}
+		for _, classWithAccessTo := range classesWithAccessTo {
+			if classWithAccessTo != classID {
+				newClassesWithAccessTo = append(newClassesWithAccessTo, classWithAccessTo)
+			}
+		}
+
+		_, err = firestoreClient.Collection("users").Doc(userWithAccess).Update(ctx, []firestore.Update{
+			{
+				Path: "classesWithAccessTo",
+				Value: newClassesWithAccessTo,
+			},
+		})
+		if err != nil {
+			return err
+		}
+	}
+	
+	// delete the notes subcollection
+	err = deleteNotesSubcollection(classID, firestoreClient, ctx)
+	if err != nil {
+		return err
+	}
+
+	// finally, delete the class itself
+	_, err = firestoreClient.Collection("classes").Doc(classID).Delete(ctx)
+	if err != nil {
+		return err
+	}
+
+	return nil
+
+}
+
+func deleteNotesSubcollection(classID string, firestoreClient *firestore.Client, ctx context.Context) error {
+	iter := firestoreClient.Collection("classes").Doc(classID).Collection("notes").Documents(ctx)
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return err
+		}
+
+		_, err = doc.Ref.Delete(ctx)
+		if err != nil {
+			return err
 		}
 	}
 
