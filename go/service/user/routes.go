@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 
 	"github.com/gorilla/mux"
+	"github.com/akuwuh/ref-note/utils"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"cloud.google.com/go/firestore"
@@ -24,7 +25,7 @@ func NewHandler(firestoreClient *firestore.Client) *Handler {
 func (h *Handler) RegisterRoutes(router *mux.Router) {
 	router.HandleFunc("/signin/{username}", h.SignIn).Methods("GET").Name("signin")
 	router.HandleFunc("/changeUsername", h.ChangeUsername).Methods("POST")
-	router.HandleFunc("/deleteAccount", h.DeleteAccount).Methods("DELETE")
+	router.HandleFunc("/deleteAccount/{username}", h.DeleteAccount).Methods("DELETE").Name("deleteAccount")
 }
 
 // upon sign in, check if user exists in db. if not, create their account.
@@ -125,4 +126,31 @@ func (h *Handler) ChangeUsername(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) DeleteAccount(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	username := vars["username"]
+
+	fmt.Println("Username:", username)
+
+	userExists, err := utils.CheckUserExists(username, h.firestoreClient, r.Context()) // boolean 
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	} 	
+
+	var classes []string{}
+	if userExists {
+		classes, err = utils.GetClasses(username, h.firestoreClient, r.Context())
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		err = utils.DeleteUserClasses(username, classes, h.firestoreClient, r.Context())
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return 
+		}
+	}
+
+	w.WriteHeader(http.StatusOK)
 }
