@@ -10,7 +10,7 @@ const Dashboard = async () => {
     const username = session?.user?.username;
 
     if (!session?.user) {
-        redirect('/');
+        redirect('/unauthorized');
     }
 
     // send user id and name to backend (name only to generate default username if doesnt exist)
@@ -23,9 +23,9 @@ const Dashboard = async () => {
             <h1>{data['userData']['username']}</h1>
             <p>classes with access to:</p>
             <ul>
-            {Object.entries(data['classesWithAccessTo']).map(([classID, classDetails]) => (
-                <li key={classID}>{classID}: {JSON.stringify(classDetails)}</li>
-            ))}
+                {Object.entries(data['classesWithAccessTo']).map(([classID, classDetails]) => (
+                    <li key={classID}>{classID}: {JSON.stringify(classDetails)}</li>
+                ))}
             </ul>
             <Image 
                 src={session?.user?.image!} 

@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 
 const ClassComponent = ({ session }: { session: Session }) => {
     // if this component is mounted, it is assumed the user is authenticated (page.tsx)
+    // @ts-ignore
     const username: string = session?.user?.username;
 
     const [classData, setClassData] = useState(
@@ -42,6 +43,7 @@ const ClassComponent = ({ session }: { session: Session }) => {
         )
     }
 
+    // @ts-ignore
     if (classData.usersWithAccess.includes(username) || classData.creatorID === username) {
         return (
             <div>

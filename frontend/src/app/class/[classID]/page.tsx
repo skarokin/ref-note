@@ -7,7 +7,7 @@ import ClassComponent from './ClassComponent';
 const Class = async () => {
     const session = await auth();
     if (!session?.user) {
-        redirect('/')
+        redirect('/unauthorized')
     }
 
     // attempts to render the client-side component; if user is not allowed then display 'Acess Denied'
