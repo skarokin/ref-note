@@ -161,3 +161,41 @@ func deleteNotesSubcollection(classID string, firestoreClient *firestore.Client,
 
 	return nil
 }
+
+// params: classCode, className, creatorID, professor(optional), location (optional), meeting(optional)
+func CreateClassUtil(classCode string, className string, creatorID string, professor string, location string, meeting string, firestoreClient *firestore.Client, ctx context.Context) (string, error) {
+	ref := firestoreClient.Collection("classes").NewDoc()
+	
+	_, err := ref.Set(ctx, map[string]interface{}{
+		"classCode": classCode,
+		"className": className,
+		"creatorID": creatorID,
+		"professor": professor,
+		"location": location,
+		"meeting": meeting,
+		"usersWithAccess": []string{creatorID},
+	})
+	if err != nil {
+		return "", err
+	}
+
+	newClassesAccessToArray, err := GetClassesWithAccessTo(creatorID, firestoreClient, ctx)
+	if err != nil {
+		return "", err
+	}
+	classID := ref.ID
+	newClassesAccessToArray = append(newClassesAccessToArray, classID)
+
+	_, err = firestoreClient.Collection("users").Doc(creatorID).Update(ctx, []firestore.Update{
+		{
+			Path: "classesWithAccessTo",
+			Value: newClassesAccessToArray,
+		},
+	})
+	if err != nil {
+		return "", err
+	}
+
+	return classID, nil
+
+}
