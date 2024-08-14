@@ -42,6 +42,34 @@ const Dashboard = async () => {
                 <input type="text" name="newUsername" />
                 <button type="submit">Change Username</button>
             </form>
+
+
+            <form
+                action="http://localhost:8080/createClass"
+                method="post"
+                className={
+                    "flex flex-col items-center m-4"
+                }
+            >
+                <input type="hidden" name="username" value={username} />
+
+                <label htmlFor="classCode" >Class Code: </label>
+                <input type="text" name="classCode" required={true} placeholder='required'/>
+
+                <label htmlFor="className">Class Name: </label>
+                <input type="text" name="className" required={true} placeholder='required'/>
+
+                <label htmlFor="professor">Professor: </label>
+                <input type="text" name="professor" />
+
+                <label htmlFor="location">Location: </label>
+                <input type="text" name="location" />
+
+                <label htmlFor="meeting">Meeting: </label>
+                <input type="text" name="meeting" />
+
+                <button type="submit">Create Class</button>
+            </form>
         </div>
     );
 }
