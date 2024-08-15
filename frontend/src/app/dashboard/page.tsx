@@ -13,7 +13,6 @@ const Dashboard = async () => {
         redirect('/unauthorized');
     }
 
-    // send user id and name to backend (name only to generate default username if doesnt exist)
     const res = await fetch(`http://localhost:8080/signin/${username}`);
     const data = await res.json();
 
