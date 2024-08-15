@@ -51,6 +51,6 @@ Student-focused note taking web app with collaborative editing and class sharing
     - DELETE `/deleteNote/{classID}/{noteName}` fully deletes a note in the notes subcollection. This is put on the class level since allowing users to delete a note while having one open is omega mendokusai. Only the class creator can delete a note 
     - PATCH `/updatePermissions` updates which users have access to the class. Only the class creator can update permissions
     - PATCH `/updateInfo` updates general class information, i.e. professor, class name, location, etc. Any user with access can update general class information
-notes:
+- notes:
     - GET `/getNote/{classID}/{noteName}` retrieves note content for given class ID and note name. Any user can call this, but whether or not note content is displayed depends on if they have access to the class
     - POST `/updateNote` updates note contents with the state of the in-memory note in the WebSocket server; this is only called after the last person disconnects from the room to keep within Firestore free tier

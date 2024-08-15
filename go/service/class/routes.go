@@ -75,7 +75,7 @@ func (h *Handler) CreateClass(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Location:", location)
 	fmt.Println("Meeting:", meeting)
 
-	classID, err := utils.CreateClassUtil(classCode, className, creatorID, professor, location, meeting, h.firestoreClient, r.Context())
+	classID, err := utils.CreateClass(classCode, className, creatorID, professor, location, meeting, h.firestoreClient, r.Context())
 	if err != nil {
 		fmt.Println("Erorr Creating Class: ", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)

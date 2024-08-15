@@ -163,7 +163,7 @@ func deleteNotesSubcollection(classID string, firestoreClient *firestore.Client,
 }
 
 // params: classCode, className, creatorID, professor(optional), location (optional), meeting(optional)
-func CreateClassUtil(classCode string, className string, creatorID string, professor string, location string, meeting string, firestoreClient *firestore.Client, ctx context.Context) (string, error) {
+func CreateClass(classCode string, className string, creatorID string, professor string, location string, meeting string, firestoreClient *firestore.Client, ctx context.Context) (string, error) {
 	ref := firestoreClient.Collection("classes").NewDoc()
 	
 	_, err := ref.Set(ctx, map[string]interface{}{
@@ -179,10 +179,12 @@ func CreateClassUtil(classCode string, className string, creatorID string, profe
 		return "", err
 	}
 
+	// update creator's classesWithAccessTo
 	newClassesAccessToArray, err := GetClassesWithAccessTo(creatorID, firestoreClient, ctx)
 	if err != nil {
 		return "", err
 	}
+
 	classID := ref.ID
 	newClassesAccessToArray = append(newClassesAccessToArray, classID)
 
@@ -196,6 +198,23 @@ func CreateClassUtil(classCode string, className string, creatorID string, profe
 		return "", err
 	}
 
+	// create a new notes subcollection
+	// collections require at least one document so a default note is created w/ dummy data
+	err = createFirstNote(classID, firestoreClient, ctx); if err != nil {
+		return "", err
+	}
+
 	return classID, nil
 
+}
+
+func createFirstNote(classID string, firestoreClient *firestore.Client, ctx context.Context) error {
+	_, err := firestoreClient.Collection("classes").Doc(classID).Collection("notes").Doc("myFirstNote").Set(ctx, map[string]interface{}{
+		"note": "This is your first note! You can add collaborators by updating class settings.",
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
