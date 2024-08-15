@@ -1,36 +1,56 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# ref:note
+Student-focused note taking web app with collaborative editing and class sharing. 
+- Web app built with Next.js, deployed on Firebase Hosting
+- Authentication with OAuth2/Google Sign-In. Sessions managed by Auth.js
+- Go API for CRUD operations running on Google Cloud Functions
+- NoSQL database on Firestore
+- Socket.IO (Node.js) WebSocket server for real-time note collaboration. Nginx for SSL and Certbot to generate/auto-renew certificates. Deployed on EC2 with Docker Compose
+- Remirror text editor for efficient note update operations
 
-## Getting Started
+### app security
+- All user session objects generated server-side
+- Session object is verified server-side before any API call
+- All API calls are performed server-side to prevent tampering
 
-First, run the development server:
+### database schema
+- users/[userID] (userID is gmail address w/o the domain)
+    - username: string
+    - classesWithAccessTo: []string
+- classes/[classID] (classID is auto-generated)
+    - classCode: string
+    - className: string
+    - creatorID: string
+    - location: string
+    - meeting: string
+    - professor: string
+    - usersWithAccess: []string
+- classes/[classID]/notes/[noteName]
+    - noteContent: string
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+### collaborative editing architecture
+- user opens some `classes/[classID]/notes/[noteName]`
+    - either open a new room if they are the only one, or join it
+    - if opening a new room, call Go API to fetch note content from database, then store note content in-memory
+- user makes a change on client; send to WebSocket server
+    - updates in-memory note content
+    - relays this change to all other client as `insertText` commands (provided by Remirror)
+- user leaves the room or is disconnected
+    - if they are the last user, then call Go API to update database with new note content
+        - trying to stay in the free tier of Firestore which is why there are no periodic updates
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+### go api endpoints
+- users:
+    - GET `/signin/{userID}` signs in a user via Google Sign-in. If their user ID does not exist in the database, then create a new account with default values. Return their info and classes they have access to
+    - POST `/changeUsername` allows a user to change their displayed username (does not affect user ID)
+    - DELETE `/deleteUser/{userID}` deletes a user and propagates any necessary changes to classes they were in or classes they created
+    - POST `/createClass` creates a class with a unique classID with user-inputted information. This is put on the user level since we need to associate a creator ID and because class creation is done in the user dashboard
+- classes:
+    - GET `/getClass/{classID}` retrieves all information about a class and displays all notes in the notes subcollection. Any user can call this, but whether or not information is displayed depends on if they have access to the class
+    - POST `/createNote` creates a new note in the notes subcollection, enforcing a unique note name per class ID. Initialized as an empty string. Any user with access can create a note
+    - DELETE `/deleteClass/{classID}` deletes a class and propagates any necessary changes to users that were in it or the person who created it. Only the class creator can delete the class
+    - DELETE `/deleteNote/{classID}/{noteName}` fully deletes a note in the notes subcollection. This is put on the class level since allowing users to delete a note while having one open is omega mendokusai. Only the class creator can delete a note 
+    - PATCH `/updatePermissions` updates which users have access to the class. Only the class creator can update permissions
+    - PATCH `/updateInfo` updates general class information, i.e. professor, class name, location, etc. Any user with access can update general class information
+notes:
+    - GET `/getNote/{classID}/{noteName}` retrieves note content for given class ID and note name. Any user can call this, but whether or not note content is displayed depends on if they have access to the class
+    - POST `/updateNote` updates note contents with the state of the in-memory note in the WebSocket server; this is only called after the last person disconnects from the room to keep within Firestore free tier
