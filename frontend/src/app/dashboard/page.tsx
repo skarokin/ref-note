@@ -2,6 +2,7 @@ import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
 import Image from 'next/image';
 import Logout from '@/components/Logout';
+import ClassCard from '@/components/ClassCard';
 
 const Dashboard = async () => {
 
@@ -16,16 +17,13 @@ const Dashboard = async () => {
     const res = await fetch(`http://localhost:8080/signin/${username}`);
     const data = await res.json();
 
+    const classData = data['classesWithAccessTo'];
+    console.log(classData);
+
     return (
         <div className="flex flex-col items-center m-4">
             <h1>Dashboard</h1>
             <h1>{data['userData']['username']}</h1>
-            <p>classes with access to:</p>
-            <ul>
-                {Object.entries(data['classesWithAccessTo']).map(([classID, classDetails]) => (
-                    <li key={classID}>{classID}: {JSON.stringify(classDetails)}</li>
-                ))}
-            </ul>
             <Image 
                 src={session?.user?.image!} 
                 alt={session?.user?.name!}
@@ -41,8 +39,6 @@ const Dashboard = async () => {
                 <input type="text" name="newUsername" />
                 <button type="submit">Change Username</button>
             </form>
-
-
             <form
                 action="http://localhost:8080/createClass"
                 method="post"
@@ -69,6 +65,15 @@ const Dashboard = async () => {
 
                 <button type="submit">Create Class</button>
             </form>
+            <ul className="flex flex-col items-center">
+                {Object.entries(classData).map(([classID, classInfo]) => (
+                    <ClassCard
+                        key={classID}
+                        authenticatedUser={username}
+                        classInfo={classInfo}
+                    />
+                ))}
+            </ul>
         </div>
     );
 }
