@@ -5,10 +5,10 @@ import Logout from '@/components/Logout';
 import { useState, useRef, useEffect } from 'react';
 
 const UserProfile = ({
-    username,
+    displayName,
     pfp
 }: {
-    username: string;
+    displayName: string;
     pfp: any;
 }) => {
     const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -46,7 +46,7 @@ const UserProfile = ({
             >
                 <Image
                     src={pfp}
-                    alt={username}
+                    alt={displayName}
                     width={30}
                     height={30}
                     className="rounded-full"
@@ -59,7 +59,7 @@ const UserProfile = ({
                 >
                     <Image
                         src={pfp}
-                        alt={username}
+                        alt={displayName}
                         width={100}
                         height={100}
                         className="rounded-full mt-4"
@@ -68,11 +68,14 @@ const UserProfile = ({
                         style={{ fontFamily: 'Raleway' }}
                         className="flex flex-row gap-2 my-4"
                     >
-                        Hi, {username}
+                        Hi, {displayName}
                     </h1>
                     <Link
                         style={{ fontFamily: 'Raleway' }}
-                        href="/profile"
+                        href={{
+                            pathname: '/profile',
+                            query: { pfp }
+                        }}
                         className="cursor-pointer border rounded-xl p-2 mb-4 text-xs sm:text-sm"
                     >
                         <p className="hover:opacity-50 transition-opacity">

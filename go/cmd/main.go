@@ -23,12 +23,12 @@ func main() {
 	// will connect to prod firestore instance)
 	// BEFORE RUNNING `go run cmd/main.go`:
 	// 1. cd into `go/`
-	// 2. run `export FIRESTORE_EMULATOR_HOST=localhost:8080`
-	// 3. make a new terminal and cd into `go/`
-	// 4. run `firebase emulators:start`
-	// 5. open the Emulator UI (localhost:4000/firestore) and add a `classes` and `users` collection;
-	//    just use the firestore-generated IDs. No need to create notes subcollections.
-	// 6. run `go run cmd/main.go`; now we arent accruing costs on prod firestore!
+	// 2. run `firebase emulators:start` (starts firestore emulator on localhost:8080)
+	// 3. open firestore emulator UI and add `classes` and `users` collections; just use firestore-generated IDs
+	// 4. open a new terminal and cd into `go/`
+	// 5. run `export FIRESTORE_EMULATOR_HOST=localhost:8080`
+	// 6. run `go run cmd/main.go`
+	// NOTE: delete cookies in browser to ensure auth is reset
     if emulatorHost := os.Getenv("FIRESTORE_EMULATOR_HOST"); emulatorHost != "" {
         log.Printf("Connecting to Firestore emulator at %s", emulatorHost)
         conf.DatabaseURL = "http://" + emulatorHost
@@ -46,7 +46,8 @@ func main() {
 
 	defer firestoreClient.Close()
 
-	server := api.NewAPIServer(":8080", firestoreClient)
+	// firestore emulator is on 8080 so use 8000 for API server
+	server := api.NewAPIServer(":8000", firestoreClient)
 	if err := server.Run(); err != nil {
 		log.Fatal(err)
 	}

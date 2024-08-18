@@ -1,6 +1,9 @@
+"use client";
+
+import Link from 'next/link';
 import UserProfile from '@/components/UserProfile';
 
-const HeaderDashboard = ({
+const HeaderClass = ({
     displayName,
     pfp
 }: {
@@ -9,11 +12,12 @@ const HeaderDashboard = ({
 }) => {
     return (
         <div className="flex flex-row justify-between items-center mt-4 mx-8">
-            <h1
+            <Link
                 style={{ fontFamily: 'Literata' }}
+                href="/dashboard"
             >
-                ref:note
-            </h1>
+                back to dashboard
+            </Link>
             <UserProfile
                 displayName={displayName} 
                 pfp={pfp}
@@ -22,4 +26,4 @@ const HeaderDashboard = ({
     )
 }
 
-export default HeaderDashboard;
+export default HeaderClass;

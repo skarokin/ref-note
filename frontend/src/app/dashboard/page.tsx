@@ -3,61 +3,43 @@ import { redirect } from 'next/navigation';
 import ClassCard from '@/components/ClassCard';
 import DashboardGreeting from '@/components/DashboardGreeting';
 import HeaderDashboard from '@/components/HeaderDashboard';
+import CreateClass from '@/components/CreateClass';
+import { getDisplayName } from '@/app/actions';
 
 const Dashboard = async () => {
 
     const session = await auth();
-    // @ts-ignore
-    const username = session?.user?.username;
-
     if (!session?.user) {
         redirect('/unauthorized');
     }
 
-    const res = await fetch(`http://localhost:8080/signin/${username}`);
+    // @ts-ignore
+    const username = session?.user?.username;
+
+    const res = await fetch(`http://localhost:8000/signin/${username}`);
     const data = await res.json();
 
+    const displayName = await getDisplayName(username);
+
     const classData = data['classesWithAccessTo'];
-    console.log(classData);
 
     return (
         <>
             <HeaderDashboard
-                username={username}
+                displayName={displayName}
                 pfp={session?.user?.image!}
             />
-            <div className="flex flex-col items-center mt-16">
-                <DashboardGreeting username={username} />
-                <form
-                    action="http://localhost:8080/createClass"
-                    method="post"
-                    className={
-                        "flex flex-col items-center m-4"
-                    }
-                >
-                    <input type="hidden" name="username" value={username} />
-
-                    <label htmlFor="classCode" >Class Code: </label>
-                    <input type="text" name="classCode" required={true} placeholder='required' />
-
-                    <label htmlFor="className">Class Name: </label>
-                    <input type="text" name="className" required={true} placeholder='required' />
-
-                    <label htmlFor="professor">Professor: </label>
-                    <input type="text" name="professor" />
-
-                    <label htmlFor="location">Location: </label>
-                    <input type="text" name="location" />
-
-                    <label htmlFor="meeting">Meeting: </label>
-                    <input type="text" name="meeting" />
-
-                    <button type="submit">Create Class</button>
-                </form>
-                <ul className="flex flex-col items-center">
+            <div className="flex flex-col items-center m-16">
+                <DashboardGreeting displayName={displayName} />
+                <div className="flex flex-row items-center justify-between w-3/5 mt-16">
+                    <h1 className="text-2xl font-bold">Classes</h1>
+                    <CreateClass username={username}/>
+                </div>
+                <ul className="flex flex-col w-3/5">
                     {Object.entries(classData).map(([classID, classInfo]) => (
                         <ClassCard
                             key={classID}
+                            classID={classID} // seems redundant but key can't be used in Link href
                             authenticatedUser={username}
                             classInfo={classInfo}
                         />

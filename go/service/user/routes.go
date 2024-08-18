@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"encoding/json"
 
+	"github.com/akuwuh/ref-note/types"
 	"github.com/gorilla/mux"
 	"github.com/akuwuh/ref-note/utils"
 	"cloud.google.com/go/firestore"
@@ -22,8 +23,9 @@ func NewHandler(firestoreClient *firestore.Client) *Handler {
 
 func (h *Handler) RegisterRoutes(router *mux.Router) {
 	router.HandleFunc("/signin/{username}", h.SignIn).Methods("GET").Name("signin")
-	router.HandleFunc("/changeUsername", h.ChangeUsername).Methods("POST")
+	router.HandleFunc("/changeDisplayName", h.ChangeDisplayName).Methods("POST")
 	router.HandleFunc("/deleteUser/{username}", h.DeleteUser).Methods("DELETE").Name("deleteUser")
+	router.HandleFunc("/getDisplayName/{username}", h.GetDisplayName).Methods("GET").Name("getDisplayName")
 }
 
 // display dashboard data for user upon signin (fetches user data and data for classes they have access to)
@@ -36,6 +38,7 @@ func (h *Handler) SignIn(w http.ResponseWriter, r *http.Request) {
 
 	userExists, err := utils.CheckUserExists(username, h.firestoreClient, r.Context())
 	if err != nil {
+		fmt.Println("Error checking if user exists:", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -44,7 +47,7 @@ func (h *Handler) SignIn(w http.ResponseWriter, r *http.Request) {
 	if !userExists {
 		fmt.Println("User does not exist, creating account with default name:", username)
 		_, err := h.firestoreClient.Collection("users").Doc(username).Set(r.Context(), map[string]interface{}{
-			"username": username,
+			"displayName": username,
 			"classesWithAccessTo": []string{},
 		})
 		if err != nil {
@@ -100,26 +103,22 @@ func (h *Handler) SignIn(w http.ResponseWriter, r *http.Request) {
 
 // does not affect userID so no need to propagate to other collections
 // this is a unique operation so no need to make it in utils
-func (h *Handler) ChangeUsername(w http.ResponseWriter, r *http.Request) {
-	err := r.ParseForm()
+func (h *Handler) ChangeDisplayName(w http.ResponseWriter, r *http.Request) {
+	var req types.ChangeDisplayNameReq
+	
+	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
-		fmt.Println("Error parsing form:", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	newUsername := r.FormValue("newUsername")
-	if newUsername == "" {
-		fmt.Println("newUsername is required")
-		http.Error(w, "newUsername is required", http.StatusBadRequest)
+	if req.NewDisplayName == "" {
+		http.Error(w, "New username cannot be empty", http.StatusBadRequest)
 		return
 	}
 
-	// the userID is their gmail address w/o the domain
-	username := r.FormValue("username")
-
-	_, err = h.firestoreClient.Collection("users").Doc(username).Set(r.Context(), map[string]interface{}{
-		"username": newUsername,
+	_, err = h.firestoreClient.Collection("users").Doc(req.Username).Set(r.Context(), map[string]interface{}{
+		"displayName": req.NewDisplayName,
 	}, firestore.MergeAll)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -159,6 +158,28 @@ func (h *Handler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 
 	// finally, delete the user
 	_, err = h.firestoreClient.Collection("users").Doc(username).Delete(r.Context())
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	w.WriteHeader(http.StatusOK)
+}
+
+func (h *Handler) GetDisplayName(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	username := vars["username"]
+
+	userData, err := h.firestoreClient.Collection("users").Doc(username).Get(r.Context())
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	displayName := userData.Data()["displayName"]
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"displayName": displayName,
+	})
 }

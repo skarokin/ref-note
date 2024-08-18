@@ -1,19 +1,26 @@
-import UserProfile from '@/components/UserProfile';
+"use client";
 
-const HeaderDashboard = ({
+import Link from 'next/link';
+import UserProfile from '@/components/UserProfile';
+import { useParams } from 'next/navigation';
+
+const HeaderManageClass = ({
     displayName,
     pfp
 }: {
     displayName: string;
     pfp: any;
 }) => {
+    const classID = useParams().classID as string;
+    const redirect = `/class/${classID}`;
     return (
         <div className="flex flex-row justify-between items-center mt-4 mx-8">
-            <h1
+            <Link
                 style={{ fontFamily: 'Literata' }}
+                href={redirect}
             >
-                ref:note
-            </h1>
+                back to class
+            </Link>
             <UserProfile
                 displayName={displayName} 
                 pfp={pfp}
@@ -22,4 +29,4 @@ const HeaderDashboard = ({
     )
 }
 
-export default HeaderDashboard;
+export default HeaderManageClass;

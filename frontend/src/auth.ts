@@ -19,7 +19,7 @@ export const {handlers, signIn, signOut, auth } = NextAuth({
         session({ session }) {
             (session.user as AdapterUser).username = session.user.email.split("@")[0];
             return session;
-        }
+        },
     }
 });
 
@@ -27,4 +27,5 @@ export const {handlers, signIn, signOut, auth } = NextAuth({
 // we are just adding the username field)
 interface AdapterUser {
     username?: string;
+    displayName?: string;
 }

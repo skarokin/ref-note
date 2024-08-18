@@ -61,11 +61,11 @@ func DeleteUserClasses(username string, classes []string, firestoreClient *fires
 		}
 
 		classDataRes := classData.Data()		
-		creatorID := classDataRes["creatorID"]
+		creatorUsername := classDataRes["creatorUsername"]
 
 		// if not creator, remove access (update usersWithAccess for classes/classID)
 		// if they ARE the creator, delete the class itself
-		if username != creatorID { 
+		if username != creatorUsername { 
 			var newUsersAccessArray []string
 			for _, userWithAccess := range classDataRes["usersWithAccess"].([]interface {}) {
 				userWithAccess := userWithAccess.(string)
@@ -95,10 +95,13 @@ func DeleteUserClasses(username string, classes []string, firestoreClient *fires
 	return nil
 }
 
-// assumes classID exists
+// assumes classID exists and request is valid (user is authorized to delete class)
 func DeleteClass(classID string, firestoreClient *firestore.Client, ctx context.Context) error {
 
 	classData, err := GetClassData(classID, firestoreClient, ctx)
+	if err != nil {
+		return err
+	}
 
 	// for each user with access to the class, remove the class from their classesWithAccessTo
 	for _, userWithAccess := range classData["usersWithAccess"].([]interface {}) {
@@ -162,25 +165,25 @@ func deleteNotesSubcollection(classID string, firestoreClient *firestore.Client,
 	return nil
 }
 
-// params: classCode, className, creatorID, professor(optional), location (optional), meeting(optional)
-func CreateClass(classCode string, className string, creatorID string, professor string, location string, meeting string, firestoreClient *firestore.Client, ctx context.Context) (string, error) {
+// params: classCode, className, creatorUsername, professor(optional), location (optional), meeting(optional)
+func CreateClass(classCode string, className string, creatorUsername string, professor string, location string, meeting string, firestoreClient *firestore.Client, ctx context.Context) (string, error) {
 	ref := firestoreClient.Collection("classes").NewDoc()
 	
 	_, err := ref.Set(ctx, map[string]interface{}{
 		"classCode": classCode,
 		"className": className,
-		"creatorID": creatorID,
+		"creatorUsername": creatorUsername,
 		"professor": professor,
 		"location": location,
 		"meeting": meeting,
-		"usersWithAccess": []string{creatorID},
+		"usersWithAccess": []string{creatorUsername},
 	})
 	if err != nil {
 		return "", err
 	}
 
 	// update creator's classesWithAccessTo
-	newClassesAccessToArray, err := GetClassesWithAccessTo(creatorID, firestoreClient, ctx)
+	newClassesAccessToArray, err := GetClassesWithAccessTo(creatorUsername, firestoreClient, ctx)
 	if err != nil {
 		return "", err
 	}
@@ -188,7 +191,7 @@ func CreateClass(classCode string, className string, creatorID string, professor
 	classID := ref.ID
 	newClassesAccessToArray = append(newClassesAccessToArray, classID)
 
-	_, err = firestoreClient.Collection("users").Doc(creatorID).Update(ctx, []firestore.Update{
+	_, err = firestoreClient.Collection("users").Doc(creatorUsername).Update(ctx, []firestore.Update{
 		{
 			Path: "classesWithAccessTo",
 			Value: newClassesAccessToArray,
@@ -208,9 +211,71 @@ func CreateClass(classCode string, className string, creatorID string, professor
 
 }
 
+func GetClassOwner(classID string, firestoreClient *firestore.Client, ctx context.Context) (string, error) {
+	classDoc, err := firestoreClient.Collection("classes").Doc(classID).Get(ctx)
+	if err != nil {
+		return "", err
+	}
+
+	classData := classDoc.Data()
+	ownerUsername := classData["creatorUsername"].(string)
+
+	return ownerUsername, nil
+}
+
 func createFirstNote(classID string, firestoreClient *firestore.Client, ctx context.Context) error {
 	_, err := firestoreClient.Collection("classes").Doc(classID).Collection("notes").Doc("myFirstNote").Set(ctx, map[string]interface{}{
 		"note": "This is your first note! You can add collaborators by updating class settings.",
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func AddUserToClass(classID string, username string, firestoreClient *firestore.Client, ctx context.Context) error {
+	// first, check if user exist
+	userExists, err := CheckUserExists(username, firestoreClient, ctx)
+	if err != nil {
+		return err
+	}
+
+	if !userExists {
+		return status.Error(codes.NotFound, "User does not exist")
+	}
+
+	// update class usersWithAccess
+	classData, err := GetClassData(classID, firestoreClient, ctx)
+	if err != nil {
+		return err
+	}
+
+	usersWithAccess := classData["usersWithAccess"].([]interface {})
+	usersWithAccess = append(usersWithAccess, username)
+
+	_, err = firestoreClient.Collection("classes").Doc(classID).Update(ctx, []firestore.Update{
+		{
+			Path: "usersWithAccess",
+			Value: usersWithAccess,
+		},
+	})
+	if err != nil {
+		return err
+	}
+
+	// update user classesWithAccessTo
+	userClassesWithAccessTo, err := GetClassesWithAccessTo(username, firestoreClient, ctx)
+	if err != nil {
+		return err
+	}
+
+	userClassesWithAccessTo = append(userClassesWithAccessTo, classID)
+	_, err = firestoreClient.Collection("users").Doc(username).Update(ctx, []firestore.Update{
+		{
+			Path: "classesWithAccessTo",
+			Value: userClassesWithAccessTo,
+		},
 	})
 	if err != nil {
 		return err

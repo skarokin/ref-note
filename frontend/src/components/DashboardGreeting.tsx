@@ -1,9 +1,9 @@
 "use client";
 
 const DashboardGreeting = ({
-    username
+    displayName
 }: {
-    username: string
+    displayName: string
 }) => {
     const currentTime = new Date().getHours();
     const timeOfDay = currentTime < 12 ? 'morning' : currentTime < 18 ? 'afternoon' : 'evening';
@@ -11,7 +11,7 @@ const DashboardGreeting = ({
         <h1 
             style={{ fontFamily: 'Literata' }}
             className="text-xl sm:text-3xl">
-            Good {timeOfDay}, {username}
+            Good {timeOfDay}, {displayName}
         </h1>
     );
 }
