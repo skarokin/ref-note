@@ -22,19 +22,19 @@ const ClassCard = ({
     const usersWithAccess = classInfo['usersWithAccess'];
 
     return (
-        <div style={{ fontFamily: 'Raleway' }} className="my-4 border rounded-md p-4 w-full">
+        <div style={{ fontFamily: 'Raleway' }} className="my-4 border-2 border-[#252525] rounded-md p-4 w-full">
             <Link
                 href={`/class/${classID}`}
                 className="text-lg font-bold"
             >
                 {authenticatedUser === creatorUsername ? `${className} | ${classCode}` : `${creatorUsername} | ${className} | ${classCode}`}
             </Link>
-            <hr className="my-2 border" />
+            <hr className="my-2 border border-[#252525]" />
             <ul>
-                <li>Location: {location}</li>
-                <li>Meeting: {meeting}</li>
-                <li>Professor: {professor}</li>
-                <li>Users with Access: {usersWithAccess.join(', ')}</li>
+                <li><span className="font-bold">Location: </span>{location}</li>
+                <li><span className="font-bold">Meeting Schedule: </span>{meeting}</li>
+                <li><span className="font-bold">Professor: </span>{professor}</li>
+                <li><span className="font-bold">Users with Access: </span>{usersWithAccess.join(', ')}</li>
             </ul>
         </div>
     );

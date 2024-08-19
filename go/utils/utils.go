@@ -283,3 +283,65 @@ func AddUserToClass(classID string, username string, firestoreClient *firestore.
 
 	return nil
 }
+
+// disallows creator removing himself
+func RemoveUserFromClass(classID string, username string, firestoreClient *firestore.Client, ctx context.Context) error {
+	classOwner, err := GetClassOwner(classID, firestoreClient, ctx)
+	if err != nil {
+		return err
+	}
+
+	if classOwner == username {
+		return status.Error(codes.PermissionDenied, "Creator cannot remove themselves from class")
+	}
+
+	// update usersWithAccess
+	classData, err := GetClassData(classID, firestoreClient, ctx)
+	if err != nil {
+		return err
+	}
+
+	usersWithAccess := classData["usersWithAccess"].([]interface {})
+	newUsersWithAccess := []string{}
+
+	for _, userWithAccess := range usersWithAccess {
+		if userWithAccess.(string) != username {
+			newUsersWithAccess = append(newUsersWithAccess, userWithAccess.(string))
+		}
+	}
+
+	_, err = firestoreClient.Collection("classes").Doc(classID).Update(ctx, []firestore.Update{
+		{
+			Path: "usersWithAccess",
+			Value: newUsersWithAccess,
+		},
+	})
+	if err != nil {
+		return err
+	}
+
+	// finally, update user classesWithAccessTo
+	classesWithAccessTo, err := GetClassesWithAccessTo(username, firestoreClient, ctx)
+	if err != nil {
+		return err
+	}
+
+	newClassesWithAccessTo := []string{}
+	for _, classWithAccessTo := range classesWithAccessTo {
+		if classWithAccessTo != classID {
+			newClassesWithAccessTo = append(newClassesWithAccessTo, classWithAccessTo)
+		}
+	}
+
+	_, err = firestoreClient.Collection("users").Doc(username).Update(ctx, []firestore.Update{
+		{
+			Path: "classesWithAccessTo",
+			Value: newClassesWithAccessTo,
+		},
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

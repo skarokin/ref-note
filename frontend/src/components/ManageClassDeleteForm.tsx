@@ -1,46 +1,48 @@
 "use client";
 
 import { FormEvent, useState } from 'react';
-import { handleLogout } from "@/app/actions";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash, faCheck } from '@fortawesome/free-solid-svg-icons';
+import { useRouter } from 'next/navigation';
 
 // if this component was mounted, user is authenticated and thus can delete their account
-const DeleteAccount = ({
-    username
+const ManageClassDeleteForm = ({
+    classID,
+    className
 }: {
-    username: string;
+    classID: string;
+    className: string;
 }) => {
-    const [clicked, setClicked] = useState<boolean>(false);
     const [message, setMessage] = useState<string>('');
+    const [clicked, setClicked] = useState<boolean>(false);
 
-    const deleteUser = async () => {
-        const res = await fetch(`http://localhost:8000/deleteUser/${username}`, {
+    const router = useRouter();
+
+    const deleteClass = async () => {
+        const res = await fetch(`http://localhost:8000/deleteClass/${classID}`, {
             method: 'DELETE'
         });
 
         if (!res.ok) {
-            console.error('Failed to delete user');
-            setMessage('Failed to delete user');
+            console.error('Failed to delete class');
+            setMessage('Failed to delete class');
         } else {
-            // implicitly redirects to homepage so no need to implement routing
-            handleLogout();
+            router.push('/dashboard');
         }
     }
 
     const handleSubmit = async (event?: FormEvent<HTMLFormElement>) => {
         if (event) event.preventDefault(); // prevent redirect on form submit 
 
-        // get value of deleteAccountForm
-        const form = document.getElementById('deleteAccountForm') as HTMLFormElement;
+        const form = document.getElementById('deleteClassForm') as HTMLFormElement;
         const input = form.querySelector('input') as HTMLInputElement;
         const value = input.value;
 
-        if (value === username) {
-            deleteUser();
+        if (value === className) {
+            deleteClass();
         } else {
-            console.error('Username does not match');
-            setMessage('Username does not match');
+            console.error('Class name does not match');
+            setMessage('Class name does not match');
         }
 
     };
@@ -52,12 +54,12 @@ const DeleteAccount = ({
 
     return (
         <>
-            <p className="text-xs sm:text-sm font-bold basis-1/6 grow-0">Delete Account</p>
+            <p className="text-xs sm:text-sm font-bold basis-1/6 grow-0">Delete Class</p>
             {
                 !clicked &&
                 <>
                     <div className="flex flex-col basis-1/2 grow-0">
-                        <p className="text-sm sm:text-base basis-1/2 grow-0">{username}</p>
+                        <p className="text-sm sm:text-base basis-1/2 grow-0">{className}</p>
                         <p className="text-xs sm:text-sm text-gray-400">{message}</p>
                     </div>
                     <button
@@ -74,11 +76,11 @@ const DeleteAccount = ({
                     <form
                         className="basis-1/2 grow-0"
                         onSubmit={handleSubmit}
-                        id="deleteAccountForm"
+                        id="deleteClassForm"
                     >
                         <input
                             type="text"
-                            placeholder="Type username to confirm"
+                            placeholder="Type class name to confirm"
                             className="bg-[#252525] text-white rounded-md"
                         />
                     </form>
@@ -94,4 +96,4 @@ const DeleteAccount = ({
     );
 }
 
-export default DeleteAccount;
+export default ManageClassDeleteForm;

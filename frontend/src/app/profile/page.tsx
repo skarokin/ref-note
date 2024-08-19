@@ -6,6 +6,8 @@ import DeleteAccount from '@/components/DeleteAccount';
 import Logout from '@/components/Logout';
 import HeaderProfile from '@/components/HeaderProfile';
 import { getDisplayName } from '@/app/actions';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faPen, faBan } from '@fortawesome/free-solid-svg-icons';
 
 // do another auth check here to see if user is authorized to make changes to their profile
 const Profile = async () => {
@@ -24,7 +26,7 @@ const Profile = async () => {
                 displayName={displayName}
                 pfp={session?.user?.image!}
             />
-            <main className="flex min-h-screen flex-col items-center justify-start p-24">
+            <main style={{ fontFamily: 'Raleway' }} className="flex flex-col items-center justify-start mt-16">
                 <Image
                     src={session?.user?.image!}
                     width={100}
@@ -33,19 +35,29 @@ const Profile = async () => {
                     className="border-4 border-[#252525] rounded-full"
                 />
                 <h1 style={{ fontFamily: 'Literata' }} className="text-xl mt-4 sm:text-2xl">Welcome, {displayName}</h1>
-                <p style={{ fontFamily: 'Raleway' }} className="text-sm mt-4 sm:text-base">Manage your account below.</p>
-                <p style={{ fontFamily: 'Raleway' }} className="text-sm sm:text-base">Username: {username} (cannot be changed)</p>
-                <div className="flex flex-row gap-4 mt-16 items-center justify-between">
-                    <ChangeDisplayName username={username} />
-                    <DeleteAccount username={username} />
-                </div>
-                <a href="/dashboard" className="hover:opacity-50 transition-opacity p-3 text-sm sm:text-base">
-                    Back to dashboard
-                </a>
-                <div className="flex flex-row items-center">
-                    <p>Logout</p>
-                    <Logout />
-                </div>
+                <p className="text-sm mt-4 sm:text-base">Manage your account below.</p>
+                <Logout showLogout={true} />
+                <section className="flex flex-col items-center mt-16 border-2 border-[#252525] p-4 rounded-lg w-3/5">
+                    <div className="flex flex-row justify-between w-full items-start">
+                        <p className="text-xs sm:text-sm font-bold basis-1/6 grow-0">Username</p>
+                        <p className="text-sm sm:text-base basis-1/2 grow-0">{username}</p>
+                        <FontAwesomeIcon icon={faBan} />
+                    </div>
+                    <hr className="w-full border border-[#252525] my-4" />
+                    <div className="flex flex-row justify-between w-full items-start">
+                        <p className="text-xs sm:text-sm font-bold basis-1/6 grow-0">Email</p>
+                        <p className="text-sm sm:text-base basis-1/2 grow-0">{session?.user?.email}</p>
+                        <FontAwesomeIcon icon={faBan} />
+                    </div>
+                    <hr className="w-full border border-[#252525] my-4" />
+                    <div className="flex flex-row justify-between w-full items-start">
+                        <ChangeDisplayName username={username} displayName={displayName} />
+                    </div>
+                    <hr className="w-full border border-[#252525] my-4" />
+                    <div className="flex flex-row justify-between w-full items-start">
+                        <DeleteAccount username={username} />
+                    </div>
+                </section>
             </main>
         </>
     )

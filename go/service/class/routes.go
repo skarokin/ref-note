@@ -33,6 +33,7 @@ func (h *Handler) RegisterRoutes(router *mux.Router) {
 	router.HandleFunc("/changeClassProfessor", h.ChangeClassProfessor).Methods("POST")
 	router.HandleFunc("/addUserToClass", h.AddUserToClass).Methods("POST")
 	router.HandleFunc("/deleteClass/{classID}", h.DeleteClass).Methods("DELETE").Name("deleteClass")
+	router.HandleFunc("/removeUserFromClass", h.RemoveUserFromClass).Methods("POST")
 }
 
 func (h *Handler) GetClass(w http.ResponseWriter, r *http.Request) {
@@ -278,4 +279,28 @@ func (h *Handler) DeleteClass(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Println("Successfully deleted class")
 	w.WriteHeader(http.StatusOK)
+}
+
+func (h *Handler) RemoveUserFromClass(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseMultipartForm(32 << 20)
+	if err != nil {
+		fmt.Println("Error parsing form:", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	
+	classID := r.FormValue("classID")
+	usernameToRemove := r.FormValue("usernameToRemove")
+
+	fmt.Printf("Removing user %s from class %s\n", usernameToRemove, classID)
+
+	err = utils.RemoveUserFromClass(classID, usernameToRemove, h.firestoreClient, r.Context())
+	if err != nil {
+		fmt.Println("Error removing user access:", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	
 }

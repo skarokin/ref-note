@@ -82,7 +82,7 @@ const UserProfile = ({
                             Manage your account
                         </p>
                     </Link>
-                    <Logout />
+                    <Logout showLogout={false}/>
                 </div>
             )}
         </div>

@@ -3,20 +3,21 @@
 import { useState, useEffect } from 'react';
 import { getClassCreator } from "@/app/actions";
 import { useParams, useRouter } from 'next/navigation';
+import ManageClassForm from '@/components/ManageClassForm';
+import ManageClassDeleteForm from '@/components/ManageClassDeleteForm';
+import ManageClassDeleteUserForm from '@/components/ManageClassDeleteUserForm';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faBan } from '@fortawesome/free-solid-svg-icons';
 
 const ManageComponent = ({
     username,
+    displayName
 }: {
     username: string;
+    displayName: string;
 }) => {
     const [classCreator, setClassCreator] = useState<string>("");
     const [isLoading, setIsLoading] = useState<boolean>(true);
-    const [messageChangeClassCode, setMessageChangeClassCode] = useState<string>("");
-    const [messageChangeClassName, setMessageChangeClassName] = useState<string>("");
-    const [messageChangeClassLocation, setMessageChangeClassLocation] = useState<string>("");
-    const [messageChangeClassMeetingSchedule, setMessageChangeClassMeetingSchedule] = useState<string>("");
-    const [messageChangeClassProfessor, setMessageChangeClassProfessor] = useState<string>("");
-    const [messageAddUserToClass, setMessageAddUserToClass] = useState<string>("");
 
     const router = useRouter();
     const params = useParams();
@@ -75,10 +76,15 @@ const ManageComponent = ({
 
     const changeClassCode = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        const form = e.currentTarget;
-        const formData = new FormData(form);
+
+        const form = document.getElementById('changeClassCode') as HTMLFormElement;
+        const input = form.querySelector('input') as HTMLInputElement;
+        const classCode = input.value;
+
+        const formData = new FormData();
 
         formData.append('classID', classID);
+        formData.append('classCode', classCode);
 
         try {
             const response = await fetch('http://localhost:8000/changeClassCode', {
@@ -91,20 +97,24 @@ const ManageComponent = ({
                 throw new Error(`Error changing class code: ${errorText}`);
             }
 
-            setMessageChangeClassCode('Class code changed successfully');
-            router.refresh();
+            return 'Class code changed successfully';
         } catch (error) {
-            setMessageChangeClassCode('Error changing class code');
             console.error('Error:', error);
+            return 'Error changing class code';
         }
     }
 
     const changeClassName = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        const form = e.currentTarget;
-        const formData = new FormData(form);
+
+        const form = document.getElementById('changeClassName') as HTMLFormElement;
+        const input = form.querySelector('input') as HTMLInputElement;
+        const className = input.value;
+
+        const formData = new FormData();
 
         formData.append('classID', classID);
+        formData.append('className', className);
 
         try {
             const response = await fetch('http://localhost:8000/changeClassName', {
@@ -117,20 +127,24 @@ const ManageComponent = ({
                 throw new Error(`Error changing class name: ${errorText}`);
             }
 
-            setMessageChangeClassName('Class name changed successfully');
-            router.refresh();
+            return 'Class name changed successfully';
         } catch (error) {
-            setMessageChangeClassName('Error changing class name');
             console.error('Error:', error);
+            return 'Error changing class name';
         }
     }
 
     const changeClassLocation = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        const form = e.currentTarget;
-        const formData = new FormData(form);
+
+        const form = document.getElementById('changeClassLocation') as HTMLFormElement;
+        const input = form.querySelector('input') as HTMLInputElement;
+        const location = input.value;
+
+        const formData = new FormData();
 
         formData.append('classID', classID);
+        formData.append('location', location);
 
         try {
             const response = await fetch('http://localhost:8000/changeClassLocation', {
@@ -143,20 +157,24 @@ const ManageComponent = ({
                 throw new Error(`Error changing class location: ${errorText}`);
             }
 
-            setMessageChangeClassLocation('Class location changed successfully');
-            router.refresh();
+            return 'Class location changed successfully';
         } catch (error) {
-            setMessageChangeClassLocation('Error changing class location');
             console.error('Error:', error);
+            return 'Error changing class location';
         }
     }
 
     const changeClassMeetingSchedule = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        const form = e.currentTarget;
-        const formData = new FormData(form);
+
+        const form = document.getElementById('changeClassMeetingSchedule') as HTMLFormElement;
+        const input = form.querySelector('input') as HTMLInputElement;
+        const meeting = input.value;
+
+        const formData = new FormData();
 
         formData.append('classID', classID);
+        formData.append('meeting', meeting);
 
         try {
             const response = await fetch('http://localhost:8000/changeClassMeetingSchedule', {
@@ -169,20 +187,24 @@ const ManageComponent = ({
                 throw new Error(`Error changing class meeting schedule: ${errorText}`);
             }
 
-            setMessageChangeClassMeetingSchedule('Class meeting schedule changed successfully');
-            router.refresh();
+            return 'Class meeting schedule changed successfully';
         } catch (error) {
-            setMessageChangeClassMeetingSchedule('Error changing class meeting schedule');
             console.error('Error:', error);
+            return 'Error changing class meeting schedule';
         }
     }
 
     const changeClassProfessor = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        const form = e.currentTarget;
-        const formData = new FormData(form);
+
+        const form = document.getElementById('changeClassProfessor') as HTMLFormElement;
+        const input = form.querySelector('input') as HTMLInputElement;
+        const professor = input.value;
+
+        const formData = new FormData();
 
         formData.append('classID', classID);
+        formData.append('professor', professor);
 
         try {
             const response = await fetch('http://localhost:8000/changeClassProfessor', {
@@ -195,20 +217,24 @@ const ManageComponent = ({
                 throw new Error(`Error changing class professor: ${errorText}`);
             }
 
-            setMessageChangeClassProfessor('Class professor changed successfully');
-            router.refresh();
+            return 'Class professor changed successfully';
         } catch (error) {
-            setMessageChangeClassProfessor('Error changing class professor');
             console.error('Error:', error);
+            return 'Error changing class professor';
         }
     }
 
     const addUserToClass = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        const form = e.currentTarget;
-        const formData = new FormData(form);
+
+        const form = document.getElementById('addUserToClass') as HTMLFormElement;
+        const input = form.querySelector('input') as HTMLInputElement;
+        const username = input.value;
+
+        const formData = new FormData();
 
         formData.append('classID', classID);
+        formData.append('username', username);
 
         try {
             const response = await fetch('http://localhost:8000/addUserToClass', {
@@ -221,152 +247,116 @@ const ManageComponent = ({
                 throw new Error(`Error adding user to class: ${errorText}`);
             }
 
-            setMessageAddUserToClass('User added to class successfully');
-            router.refresh();
-        } catch (error) {
-            setMessageAddUserToClass('Error adding user to class');
-            console.error('Error:', error);
-        }
-    }
-
-    const deleteClass = async () => {
-        try {
-            const response = await fetch(`http://localhost:8000/deleteClass/${classID}`, {
-                method: 'DELETE',
-            });
-
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(`Error deleting class: ${errorText}`);
-            }
-
-            router.push('/dashboard');
+            return 'User added to class successfully';
         } catch (error) {
             console.error('Error:', error);
+            return 'Error adding user to class';
         }
     }
 
     return (
-        <div style={{ fontFamily: 'Raleway' }} className="flex flex-col w-3/5 ">
-            <h1
-                style={{ fontFamily: 'Literata' }}
-                className="text-xl sm:text-3xl"
-            >
-                Class Settings
-            </h1>
-            <p>Class ID: {classID}</p>
-            <hr className="border rounded-md my-2" />
-            <div className="flex flex-col gap-4">
-                <div className="flex flex-row justify-between items-start border border-[#252525] p-4 rounded-md">
-                    <form
-                        className="flex flex-col gap-2 items-start grow"
-                        onSubmit={changeClassCode}
-                    >
-                        <label>Change class code</label>
-                        <input className="bg-[#252525] text-white p-2 rounded-md w-3/4" type="text" name="classCode" id="classCode" />
-                        <button
-                            className="hover:opacity-50 transition-opacity"
-                        >
-                            Submit
-                        </button>
-                        <p>{messageChangeClassCode}</p>
-                    </form>
-                    <p className="text-sm w-1/6 text-left">{classData.classCode}</p>
-                </div>
-                <div className="flex flex-row justify-between items-start border border-[#252525] p-4 rounded-md">
-                    <form
-                        className="flex flex-col gap-2 items-start grow"
-                        onSubmit={changeClassName}
-                    >
-                        <label>Change class name</label>
-                        <input className="bg-[#252525] text-white p-2 rounded-md w-3/4" type="text" name="className" id="className" />
-                        <button
-                            className="hover:opacity-50 transition-opacity"
-                        >
-                            Submit
-                        </button>
-                        <p>{messageChangeClassName}</p>
-                    </form>
-                    <p className="text-sm w-1/6 text-left">{classData.className}</p>
-                </div>
-                <div className="flex flex-row justify-between items-start border border-[#252525] p-4 rounded-md">
-                    <form
-                        className="flex flex-col gap-2 items-start grow"
-                        onSubmit={changeClassLocation}
-                    >
-                        <label>Change class location</label>
-                        <input className="bg-[#252525] text-white p-2 rounded-md w-3/4" type="text" name="location" id="location" />
-                        <button
-                            className="hover:opacity-50 transition-opacity"
-                        >
-                            Submit
-                        </button>
-                        <p>{messageChangeClassLocation}</p>
-                    </form>
-                    <p className="text-sm w-1/6 text-left">{classData.location}</p>
-                </div>
-                <div className="flex flex-row justify-between items-start border border-[#252525] p-4 rounded-md">
-                    <form
-                        className="flex flex-col gap-2 items-start grow"
-                        onSubmit={changeClassMeetingSchedule}
-                    >
-                        <label>Change class meeting schedule</label>
-                        <input className="bg-[#252525] text-white p-2 rounded-md w-3/4" type="text" name="meeting" id="meeting" />
-                        <button
-                            className="hover:opacity-50 transition-opacity"
-                        >
-                            Submit
-                        </button>
-                        <p>{messageChangeClassMeetingSchedule}</p>
-                    </form>
-                    <p className="text-sm w-1/6 text-left">{classData.meeting}</p>
-                </div>
-                <div className="flex flex-row justify-between items-start border border-[#252525] p-4 rounded-md">
-                    <form
-                        className="flex flex-col gap-2 items-start grow"
-                        onSubmit={changeClassProfessor}
-                    >
-                        <label>Change class professor</label>
-                        <input className="bg-[#252525] text-white p-2 rounded-md w-3/4" type="text" name="professor" id="professor" />
-                        <button
-                            className="hover:opacity-50 transition-opacity"
-                        >
-                            Submit
-                        </button>
-                        <p>{messageChangeClassProfessor}</p>
-                    </form>
-                    <p className="text-sm w-1/6">{classData.professor}</p>
-                </div>
-                <div className="flex flex-row justify-between items-start border border-[#252525] p-4 rounded-md">
-                    <form
-                        className="flex flex-col gap-2 items-start grow"
-                        onSubmit={addUserToClass}
-                    >
-                        <label>Add user to class</label>
-                        <input className="bg-[#252525] text-white p-2 rounded-md w-3/4" type="text" name="username" id="username" />
-                        <button
-                            className="hover:opacity-50 transition-opacity"
-                        >
-                            Submit
-                        </button>
-                        <p>{messageAddUserToClass}</p>
-                    </form>
-                    <select className="text-sm w-1/6 text-left bg-[#252525] text-white p-2 rounded-md">
-                        {classData.usersWithAccess.map((user) => {
-                            return <option key={user} value={user}>{user}</option>
-                        })}
-                    </select>
-                </div>
-            </div>
-            <div className="cursor-pointer border border-[#252525] rounded-xl p-2 w-fit self-center mt-4">
-                <button
-                    className="hover:opacity-50 transition-opacity text-red-400"
-                    onClick={deleteClass} // assume user is creator if they can access this component
+        <>
+            <div style={{ fontFamily: 'Raleway' }} className="flex flex-col items-center justify-start w-3/5">
+                <h1
+                    style={{ fontFamily: 'Literata' }}
+                    className="text-xl sm:text-3xl"
                 >
-                    DANGER: Delete Class (cannot be undone)
-                </button>
+                    Welcome, {displayName}
+                </h1>
+                <p className="text-sm mt-4 sm:text-base">Manage your class below.</p>
             </div>
-        </div>
+            <section className="flex flex-col items-center border-2 border-[#252525] mt-16 p-4 rounded-lg w-3/5">
+                <div className="flex flex-row justify-between w-full items-start">
+                    <p className="text-xs sm:text-sm font-bold basis-1/6 grow-0">Class ID</p>
+                    <p className="text-sm sm:text-base basis-1/2 grow-0">{classID}</p>
+                    <FontAwesomeIcon icon={faBan} />
+                </div>
+                <hr className="w-full border border-[#252525] my-4" />
+                <div className="flex flex-row justify-between w-full items-start">
+                    <p className="text-xs sm:text-sm font-bold basis-1/6 grow-0">Class Creator</p>
+                    <p className="text-sm sm:text-base basis-1/2 grow-0">{classCreator}</p>
+                    <FontAwesomeIcon icon={faBan} />
+                </div>
+                <hr className="w-full border border-[#252525] my-4" />
+                <div className="flex flex-row justify-between w-full items-start">
+                    <ManageClassForm
+                        formID="changeClassCode"
+                        inputPlaceholder="Type new class code"
+                        classSettingType="Class Code"
+                        classSettingTypeName={classData.classCode}
+                        onSubmitFunction={changeClassCode} />
+                </div>
+                <hr className="w-full border border-[#252525] my-4" />
+                <div className="flex flex-row justify-between w-full items-start">
+                    <ManageClassForm
+                        formID="changeClassName"
+                        inputPlaceholder="Type new class name"
+                        classSettingType="Class Name"
+                        classSettingTypeName={classData.className}
+                        onSubmitFunction={changeClassName} />
+                </div>
+                <hr className="w-full border border-[#252525] my-4" />
+                <div className="flex flex-row justify-between w-full items-start">
+                    <ManageClassForm
+                        formID="changeClassLocation"
+                        inputPlaceholder="Type new class location"
+                        classSettingType="Class Location"
+                        classSettingTypeName={classData.location}
+                        onSubmitFunction={changeClassLocation} />
+                </div>
+                <hr className="w-full border border-[#252525] my-4" />
+                <div className="flex flex-row justify-between w-full items-start">
+                    <ManageClassForm
+                        formID="changeClassMeetingSchedule"
+                        inputPlaceholder="Type new class meeting schedule"
+                        classSettingType="Class Meeting Schedule"
+                        classSettingTypeName={classData.meeting}
+                        onSubmitFunction={changeClassMeetingSchedule} />
+                </div>
+                <hr className="w-full border border-[#252525] my-4" />
+                <div className="flex flex-row justify-between w-full items-start">
+                    <ManageClassForm
+                        formID="changeClassProfessor"
+                        inputPlaceholder="Type new class professor"
+                        classSettingType="Class Professor"
+                        classSettingTypeName={classData.professor}
+                        onSubmitFunction={changeClassProfessor} />
+                </div>
+                <hr className="w-full border border-[#252525] my-4" />
+                <div className="flex flex-row justify-between w-full items-start">
+                    <ManageClassForm
+                        formID="addUserToClass"
+                        inputPlaceholder="Type username to add"
+                        classSettingType="Users With Access"
+                        classSettingTypeName={
+                            <select className="bg-[#252525] text-white rounded-md">
+                                {classData.usersWithAccess.map((user) => {
+                                    return <option key={user} value={user}>{user}</option>;
+                                })}
+                            </select>
+                        }
+                        onSubmitFunction={addUserToClass} />
+                </div>
+                <hr className="w-full border border-[#252525] my-4" />
+                <div className="flex flex-row justify-between w-full items-start">
+                    <ManageClassDeleteUserForm
+                        classID={classID}
+                        usersWithAccess={<select className="bg-[#252525] text-white rounded-md">
+                            {classData.usersWithAccess.map((user) => {
+                                return <option key={user} value={user}>{user}</option>;
+                            })}
+                        </select>} 
+                    />
+                </div>
+                <hr className="w-full border border-[#252525] my-4" />
+                <div className="flex flex-row justify-between w-full items-start">
+                    <ManageClassDeleteForm
+                        classID={classID}
+                        className={classData.className} 
+                    />
+                </div>
+            </section>
+        </>
     );
 };
 

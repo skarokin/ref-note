@@ -9,6 +9,7 @@ const ClassComponent = ({ username }: { username: string }) => {
     const [isLoading, setIsLoading] = useState(true);
     const [classData, setClassData] = useState(
         {
+            classCode: "",
             className: "",
             creatorUsername: "",
             location: "",
@@ -53,12 +54,17 @@ const ClassComponent = ({ username }: { username: string }) => {
                         >
                             {classData?.className}
                         </h1>
-                        <p>Owner: {classData?.creatorUsername}</p>
+                        <h3 style={{ fontFamily: 'Literata' }}
+                            className="text-lg"
+                        >
+                            {classData?.classCode}
+                        </h3>
                     </div>
-                    <ManageClass classID={classID}/>
+                    <ManageClass classID={classID} />
                 </div>
                 <hr className="border rounded-md my-2" />
                 <div>
+                    <span className="font-bold">Creator: </span><span>{classData?.creatorUsername}</span>
                     <p className="font-bold overflow-hidden whitespace-nowrap text-ellipsis">
                         Location: <span className="font-normal">{classData?.location}</span>
                     </p>

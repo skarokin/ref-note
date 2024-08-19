@@ -23,7 +23,7 @@ const Manage = async () => {
                 pfp={pfp}
             />
             <div className="flex flex-col items-center m-16">
-                <ManageComponent username={username} />
+                <ManageComponent username={username} displayName={displayName} />
             </div>
         </>
     )
