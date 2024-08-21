@@ -345,3 +345,22 @@ func RemoveUserFromClass(classID string, username string, firestoreClient *fires
 
 	return nil
 }
+
+func RetrieveNotesHelper(notesSubcollection *firestore.CollectionRef, ctx context.Context) ([]map[string]interface{}, error) {
+	iter := notesSubcollection.Documents(ctx)
+	var notes []map[string]interface{}
+
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return nil, err
+		}
+
+		notes = append(notes, doc.Data())
+	}
+
+	return notes, nil
+}

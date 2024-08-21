@@ -3,6 +3,7 @@
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import ManageClass from '@/components/ManageClass';
+import { render } from 'react-dom';
 
 const ClassComponent = ({ username }: { username: string }) => {
     // if this component is mounted, it is assumed the user is authenticated (page.tsx)
@@ -18,15 +19,22 @@ const ClassComponent = ({ username }: { username: string }) => {
             usersWithAccess: []
         }
     );
-
+    const [notesData, setNotesData] = useState(
+        []
+    );
     const params = useParams();
     const classID = params.classID as string;
-
     // a little hack to use async functions in a client-side component
     useEffect(() => {
         async function fetchClassData() {
             const res = await fetch("http://localhost:8000/getClass/" + classID);
+            const notesRes = await fetch("http://localhost:8000/retrieveNotes/" + classID);
             setClassData(await res.json());
+            console.log(notesRes);
+            const notesJSON = await notesRes.json();
+            console.log(notesJSON);
+            setNotesData(notesJSON);
+            console.log(notesData)
             setIsLoading(false);
         }
 
@@ -83,6 +91,11 @@ const ClassComponent = ({ username }: { username: string }) => {
                         })}
                     </ul>
                 </div>
+                <hr className="border rounded-md my-2" />
+                <h1 className='text-2xl font-semibold'>Notes: </h1>
+                <ul className="flex flex-col w-3/5">
+                    {/* notes here */}
+                </ul>
             </div>
         );
     } else {

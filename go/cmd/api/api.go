@@ -8,7 +8,7 @@ import (
 	"github.com/rs/cors"
 	"github.com/akuwuh/ref-note/service/user"
 	"github.com/akuwuh/ref-note/service/class"
-	// "github.com/akuwuh/ref-note/service/note"
+	"github.com/akuwuh/ref-note/service/note"
 	"cloud.google.com/go/firestore"
 )
 
@@ -36,8 +36,8 @@ func (s *APIServer) Run() error {
 	classHandler := class.NewHandler(s.firestoreClient)
 	classHandler.RegisterRoutes(router)
 
-	// noteHandler := note.NewHandler(s.firestoreClient)
-	// noteHandler.RegisterRoutes(router)
+	noteHandler := note.NewHandler(s.firestoreClient)
+	noteHandler.RegisterRoutes(router)
 
 	// create new CORS handler
 	c := cors.New(cors.Options{
