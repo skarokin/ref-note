@@ -25,7 +25,7 @@ const ClassCard = ({
         <div style={{ fontFamily: 'Raleway' }} className="my-4 border-2 border-[#252525] rounded-md p-4 w-full">
             <Link
                 href={`/class/${classID}`}
-                className="text-lg font-bold"
+                className="text-lg font-bold hover:opacity-50 transition-opacity"
             >
                 {authenticatedUser === creatorUsername ? `${className} | ${classCode}` : `${creatorUsername} | ${className} | ${classCode}`}
             </Link>

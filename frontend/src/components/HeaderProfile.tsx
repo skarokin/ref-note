@@ -15,6 +15,7 @@ const HeaderProfile = ({
             <Link
                 style={{ fontFamily: 'Literata' }}
                 href="/dashboard"
+                className="hover:opacity-50 transition-opacity"
             >
                 back to dashboard
             </Link>

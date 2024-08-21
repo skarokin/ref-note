@@ -17,8 +17,18 @@ const Dashboard = async () => {
     const username = session?.user?.username;
 
     const res = await fetch(`http://localhost:8000/signin/${username}`);
-    const data = await res.json();
+    // gracefully handle error fetching user data or classes with access to
+    if (!res.ok) {
+        console.log(res)
+        return (
+            <h1>
+                Could not fetch dashboard for {username}.
+                It is possible that a class they have access to does not exist.
+            </h1>
+        );
+    }
 
+    const data = await res.json();
     const displayName = await getDisplayName(username);
 
     const classData = data['classesWithAccessTo'];
@@ -33,7 +43,7 @@ const Dashboard = async () => {
                 <DashboardGreeting displayName={displayName} />
                 <div className="flex flex-row items-center justify-between w-3/5 mt-16">
                     <h1 className="text-2xl font-bold">Classes</h1>
-                    <CreateClass username={username}/>
+                    <CreateClass username={username} />
                 </div>
                 <ul className="flex flex-col w-3/5">
                     {Object.entries(classData).map(([classID, classInfo]) => (

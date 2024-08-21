@@ -57,8 +57,20 @@ func (h *Handler) GetClass(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Println("Class found:", classDoc.Data())
 
+	// class exists, now get notes for class and attach to response
+	notesMetadata, err := utils.GetNotesMetadata(classID, h.firestoreClient, r.Context())
+	if err != nil {
+		fmt.Println("Error getting notes metadata:", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(classDoc.Data())
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"classData": classDoc.Data(),
+		"notesMetadata": notesMetadata,
+	})
 }
 
 // creates a class

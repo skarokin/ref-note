@@ -18,6 +18,7 @@ const HeaderManageClass = ({
             <Link
                 style={{ fontFamily: 'Literata' }}
                 href={redirect}
+                className="hover:opacity-50 transition-opacity"
             >
                 back to class
             </Link>

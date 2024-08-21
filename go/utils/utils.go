@@ -2,6 +2,7 @@ package utils
 
 import (
 	"context"
+	"time"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -225,6 +226,9 @@ func GetClassOwner(classID string, firestoreClient *firestore.Client, ctx contex
 
 func createFirstNote(classID string, firestoreClient *firestore.Client, ctx context.Context) error {
 	_, err := firestoreClient.Collection("classes").Doc(classID).Collection("notes").Doc("myFirstNote").Set(ctx, map[string]interface{}{
+		"createdBy": "system",
+		"createdDate": firestore.ServerTimestamp,
+		"lastUpdated": firestore.ServerTimestamp,
 		"note": "This is your first note! You can add collaborators by updating class settings.",
 	})
 	if err != nil {
@@ -346,12 +350,15 @@ func RemoveUserFromClass(classID string, username string, firestoreClient *fires
 	return nil
 }
 
-func RetrieveNotesHelper(notesSubcollection *firestore.CollectionRef, ctx context.Context) ([]map[string]interface{}, error) {
-	iter := notesSubcollection.Documents(ctx)
-	var notes []map[string]interface{}
+func GetNotesMetadata(classID string, firestoreClient *firestore.Client, ctx context.Context) (map[string]interface{}, error) {
+	// no need for make() here because we are making map equal to another map instead of assigning to it
+	var notesMetadata map[string]interface{}
+	// get all subcollections of classID
+	iter := firestoreClient.Collection("classes").Doc(classID).Collections(ctx)
 
+	// loop thru each subcollection
 	for {
-		doc, err := iter.Next()
+		collRef, err := iter.Next()
 		if err == iterator.Done {
 			break
 		}
@@ -359,8 +366,52 @@ func RetrieveNotesHelper(notesSubcollection *firestore.CollectionRef, ctx contex
 			return nil, err
 		}
 
-		notes = append(notes, doc.Data())
+		// if we find notes subcollection, get note metadata
+		// note: we do not get actual note content here; only get actual content when user opens a specific note
+		if collRef.ID == "notes" {
+			notesMetadata, err = getNotesMetadataHelper(collRef, ctx)
+			if err != nil {
+				return nil, err
+			}
+
+			break
+		}
 	}
 
-	return notes, nil
+	return notesMetadata, nil
+}
+
+func getNotesMetadataHelper(notesSubcollection *firestore.CollectionRef, ctx context.Context) (map[string]interface{}, error) {
+	iter := notesSubcollection.Documents(ctx)		// get all documents in notes subcollection
+
+	// {
+	// 	"noteName": {
+	// 		"createdBy": "username",
+	// 		"createdDate": "timestamp",
+	// 		"lastUpdated": "timestamp",
+	// },
+	// ...
+	// }
+	// interestingly we need make() because we cannot assign to a nil map...
+	// make() is like the New keyword, we need to initialize the map before we can assign to it.
+	notesMetadata := make(map[string]interface{})
+	
+	for {											
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return nil, err
+		}
+	
+		notesMetadata[doc.Ref.ID] = map[string]interface{}{
+			"createdBy": doc.Data()["createdBy"].(string),
+			"createdDate": doc.Data()["createdDate"].(time.Time).String(),
+			"lastUpdated": doc.Data()["lastUpdated"].(time.Time).String(),
+		}
+		
+	}
+	
+	return notesMetadata, nil
 }

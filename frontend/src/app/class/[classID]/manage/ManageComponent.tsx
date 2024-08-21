@@ -51,7 +51,8 @@ const ManageComponent = ({
     useEffect(() => {
         async function fetchClassData() {
             const res = await fetch("http://localhost:8000/getClass/" + classID);
-            setClassData(await res.json());
+            const data = await res.json();
+            setClassData(data['classData']);
         }
 
         if (classID) {
@@ -267,15 +268,15 @@ const ManageComponent = ({
             </div>
             <section className="flex flex-col items-center border-2 border-[#252525] mt-16 p-4 rounded-lg w-3/5">
                 <div className="flex flex-row justify-between w-full items-start">
-                    <p className="text-xs sm:text-sm font-bold basis-1/6 grow-0">Class ID</p>
-                    <p className="text-sm sm:text-base basis-1/2 grow-0">{classID}</p>
-                    <FontAwesomeIcon icon={faBan} />
+                    <p className="text-xs sm:text-sm font-bold basis-1/6 grow-0 opacity-50">Class ID</p>
+                    <p className="text-sm sm:text-base basis-1/2 grow-0 opacity-50">{classID}</p>
+                    <FontAwesomeIcon icon={faBan} className="opacity-50" />
                 </div>
                 <hr className="w-full border border-[#252525] my-4" />
                 <div className="flex flex-row justify-between w-full items-start">
-                    <p className="text-xs sm:text-sm font-bold basis-1/6 grow-0">Class Creator</p>
-                    <p className="text-sm sm:text-base basis-1/2 grow-0">{classCreator}</p>
-                    <FontAwesomeIcon icon={faBan} />
+                    <p className="text-xs sm:text-sm font-bold basis-1/6 grow-0 opacity-50">Class Creator</p>
+                    <p className="text-sm sm:text-base basis-1/2 grow-0 opacity-50">{classCreator}</p>
+                    <FontAwesomeIcon icon={faBan} className="opacity-50" />
                 </div>
                 <hr className="w-full border border-[#252525] my-4" />
                 <div className="flex flex-row justify-between w-full items-start">

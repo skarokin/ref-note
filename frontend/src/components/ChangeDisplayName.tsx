@@ -59,7 +59,10 @@ const ChangeDisplayName = ({
                         <p className="text-sm sm:text-base basis-1/2 grow-0">{displayName}</p>
                         <p className="text-xs sm:text-sm text-gray-400">{message}</p>
                     </div>
-                    <button onClick={() => setIsEditing(!isEditing)}>
+                    <button
+                        onClick={() => setIsEditing(!isEditing)}
+                        className="hover:opacity-50 transition-opacity"
+                    >
                         <FontAwesomeIcon icon={faPen} />
                     </button>
                 </>
