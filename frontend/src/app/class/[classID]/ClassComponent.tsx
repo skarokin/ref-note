@@ -4,6 +4,7 @@ import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import ManageClass from '@/components/ManageClass';
 import CreateNote from '@/components/CreateNote';
+import NoteCard from '@/components/NoteCard';
 
 // stupid interfaces because stupid annoying typescript errors
 interface ClassData {
@@ -77,7 +78,11 @@ const ClassComponent = ({ username }: { username: string }) => {
     if (isLoading) {
         return (
             <div className="w-3/5">
-                <h1>Loading...</h1>
+                <h1 style={{ fontFamily: 'Raleway' }}
+                    className="text-xl"
+                >
+                    Loading...
+                </h1>
             </div>
         );
     }
@@ -103,14 +108,14 @@ const ClassComponent = ({ username }: { username: string }) => {
                 </div>
                 <hr className="border rounded-md my-2" />
                 <div>
-                    <div className="flex flex-row items-center justify-between">
+                    <div className="flex flex-row items-center gap-4">
                         <p
                             onClick={() => setOpenDetails(!openDetails)}
-                            className="font-bold hover:cursor-pointer hover:opacity-50 transition-opacity"
+                            className="font-bold hover:cursor-pointer hover:opacity-50 transition-opacity grow-0 basis-1/6"
                         >
                             {openDetails ? 'Hide' : 'Show Details'}
                         </p>
-                        <button 
+                        <button
                             onClick={() => setOpenDetails(!openDetails)}
                             className="font-mono hover:cursor-pointer hover:opacity-50 transition-opacity"
                         >
@@ -138,22 +143,23 @@ const ClassComponent = ({ username }: { username: string }) => {
                                 })}
                             </ul>
                         </div>
-                        }
+                    }
                 </div>
                 <div className="flex flex-row items-center justify-between mt-16">
-                    <h1 className="text-2xl font-bold">Classes</h1>
+                    <h1 className="text-2xl font-bold">Notes</h1>
                     <CreateNote classID={classID} />
                 </div>
                 {/* super temp: just display notes as a <ul>. later, an actual card will be made for it */}
                 <ul>
                     {Object.keys(notesMetadata).map((noteName) => {
-                        const metadata = notesMetadata[noteName];
+                        const noteMetadata = notesMetadata[noteName];
                         return (
-                            <li key={metadata.createdBy + metadata.createdDate}>
-                                <p>{metadata.createdBy}</p>
-                                <p>{metadata.createdDate}</p>
-                                <p>{metadata.lastUpdated}</p>
-                            </li>
+                            <NoteCard
+                                key={noteName}
+                                classID={classID}
+                                noteName={noteName}
+                                noteMetadata={noteMetadata}
+                            />
                         );
                     })}
                 </ul>

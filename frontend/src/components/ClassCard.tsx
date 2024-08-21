@@ -8,8 +8,8 @@ const ClassCard = ({
     authenticatedUser,
     classInfo
 }: {
-    key: string
-    classID: string,       
+    key: string;
+    classID: string;       
     authenticatedUser: string;
     classInfo: any;         // temp; change to {classCode: string, className: string, ...}
 }) => {
