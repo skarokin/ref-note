@@ -2,7 +2,13 @@ import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
 import { getDisplayName } from '@/app/actions';
 import HeaderManageClass from '@/components/HeaderManageClass';
-import NoteComponent from './NoteComponent';
+
+// this is necessary to avoid a build error
+// see https://github.com/yjs/yjs/issues/438#issuecomment-1271063127
+import dynamic from 'next/dynamic';
+export const NoteComponent = dynamic(() => import('./NoteComponent'), {
+  ssr: false,
+});
 
 const Note = async () => {
     const session = await auth();

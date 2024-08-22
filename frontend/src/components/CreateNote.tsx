@@ -9,9 +9,9 @@ const CreateNote = ({
     classID: string;
     username: string;
 }) => {
-    
     const [message, setMessage] = useState('');
     const [isOpen, setIsOpen] = useState(false);
+    const [isAnimating, setIsAnimating] = useState(false);
 
     const onClick = () => {
         setIsOpen(!isOpen);
@@ -21,7 +21,6 @@ const CreateNote = ({
         setIsOpen(false);
     };
 
-    // if user presses escape key, close form
     useEffect(() => {
         const handleEscape = (event: KeyboardEvent) => {
             if (event.key === 'Escape') {
@@ -36,8 +35,6 @@ const CreateNote = ({
         };
     }, []);
 
-    // temp: createNote endpoint not implemented yet 
-    // if this component was mounted, user has access to class so no need for further auth check
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         const form = event.currentTarget;
@@ -67,38 +64,82 @@ const CreateNote = ({
         }
     };
 
+    useEffect(() => {
+        if (isOpen) {
+            const timer = setTimeout(() => setIsAnimating(true), 10);
+            return () => clearTimeout(timer);
+        } else {
+            setIsAnimating(false);
+        }
+    }, [isOpen]);
+
     return (
         <div className={isOpen ? 'relative' : ''}>
-            <button onClick={onClick} className="text-2xl font-bold hover:opacity-50 transition-opacity">+</button>
+            <button 
+                onClick={onClick} 
+                className="bg-[#252525] hover:bg-[#3a3a3a] text-white rounded-full w-10 h-10 flex items-center justify-center text-3xl transition-colors duration-150"
+            >
+                +
+            </button>
             {isOpen && (
                 <>
                     <div
-                        className="fixed inset-0 z-0"
+                        className={`fixed inset-0 bg-black z-0 transition-opacity duration-150
+                                    ${isAnimating ? 'opacity-50' : 'opacity-0'}`}
                         onClick={closeForm}
                     ></div>
                     <div
-                        className="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-sm backdrop-brightness-50"
+                        className={`fixed inset-0 flex items-center justify-center z-50 
+                                    transition-all duration-150 ease-in-out
+                                    ${isAnimating
+                                ? 'backdrop-blur-sm backdrop-brightness-50'
+                                : 'backdrop-blur-none backdrop-brightness-100'}`}
                     >
-                        <div style={{ fontFamily: 'Raleway' }} className="flex flex-col bg-[#252525] p-6 rounded-md shadow-lg w-1/2">
-                            <button className="self-end hover:opacity-50 transition-opacity" onClick={closeForm}>x</button>
+                        <div
+                            style={{ fontFamily: 'Raleway' }}
+                            className={`flex flex-col bg-[#252525] p-8 rounded-lg shadow-2xl w-full max-w-md
+                                        transition-all duration-150 ease-in-out
+                                        ${isAnimating
+                                    ? 'opacity-100 scale-100'
+                                    : 'opacity-0 scale-90'}`}
+                        >
+                            <button 
+                                className="self-end text-gray-400 hover:text-gray-200 transition-colors duration-150" 
+                                onClick={closeForm}
+                            >
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                            <h2 className="text-2xl font-bold mb-6 text-center text-white">Create New Note</h2>
                             <form
                                 onSubmit={handleSubmit}
                                 method="post"
-                                className="flex flex-col gap-2 m-4"
+                                className="flex flex-col gap-4"
                             >
                                 <input type="hidden" name="classID" value={classID} />
                                 <input type="hidden" name="username" value={username} />
 
-                                <label htmlFor="Note Name">Note Name: </label>
-                                <input className="rounded-md p-1" type="text" name="noteName" required={true} placeholder='required' />
-
-                                <div className="border rounded-xl p-2 self-center w-fit mt-4">
-                                    <button type="submit" className="hover:opacity-50 transition-opacity">
-                                        Create Note
-                                    </button>
+                                <div className="flex flex-col">
+                                    <label htmlFor="noteName" className="mb-2 font-medium text-gray-300">Note Name</label>
+                                    <input 
+                                        id="noteName"
+                                        className="rounded-md p-3 border border-gray-600 bg-[#3a3a3a] text-white focus:ring-2 focus:ring-[#454545] focus:border-transparent transition-all duration-150" 
+                                        type="text" 
+                                        name="noteName" 
+                                        required={true} 
+                                        placeholder='Enter note name' 
+                                    />
                                 </div>
+
+                                <button 
+                                    type="submit" 
+                                    className="mt-4 bg-[#3a3a3a] hover:bg-[#454545] text-white font-bold py-3 px-4 rounded-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-[#454545] focus:ring-opacity-50"
+                                >
+                                    Create Note
+                                </button>
                             </form>
-                            <p className="text-red-500">{message}</p>
+                            {message && <p className="mt-4 text-red-400 text-center">{message}</p>}
                         </div>
                     </div>
                 </>

@@ -12,6 +12,7 @@ const UserProfile = ({
     pfp: any;
 }) => {
     const [isOpen, setIsOpen] = useState<boolean>(false);
+    const [isAnimating, setIsAnimating] = useState<boolean>(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const buttonRef = useRef<HTMLButtonElement>(null);
 
@@ -37,6 +38,15 @@ const UserProfile = ({
         setIsOpen(prevState => !prevState);
     };
 
+    useEffect(() => {
+        if (isOpen) {
+            const timer = setTimeout(() => setIsAnimating(true), 10);
+            return () => clearTimeout(timer);
+        } else {
+            setIsAnimating(false);
+        }
+    }, [isOpen]);
+
     return (
         <div className="flex flex-col relative">
             <button
@@ -55,7 +65,12 @@ const UserProfile = ({
             {isOpen && (
                 <div
                     ref={dropdownRef}
-                    className="flex flex-col items-center absolute top-full right-0 mt-2 w-64 bg-[#252525] shadow-md p-2 rounded-md z-50"
+                    className={`flex flex-col items-center absolute top-full right-0 mt-2 w-64 bg-[#252525]
+                        shadow-md p-2 rounded-md z-50 transition-all duration-150 ease-in-out
+                        ${isAnimating
+                            ? 'opacity-100 scale-100'
+                            : 'opacity-0 scale-90'}`
+                    }
                 >
                     <Image
                         src={pfp}
@@ -76,9 +91,9 @@ const UserProfile = ({
                             pathname: '/profile',
                             query: { pfp }
                         }}
-                        className="cursor-pointer border rounded-xl p-2 mb-4 text-xs sm:text-sm"
+                        className="bg-[#3a3a3a] hover:bg-[#454545] text-white text-xs sm:text-sm font-bold py-3 px-4 rounded-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-[#454545] focus:ring-opacity-50"
                     >
-                        <p className="hover:opacity-50 transition-opacity">
+                        <p>
                             Manage your account
                         </p>
                     </Link>

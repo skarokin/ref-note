@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 const CreateClass = ({ username }: { username: string }) => {
     const router = useRouter();
     const [isOpen, setIsOpen] = useState(false);
+    const [isAnimating, setIsAnimating] = useState(false);
 
     const onClick = () => {
         setIsOpen(!isOpen);
@@ -15,7 +16,6 @@ const CreateClass = ({ username }: { username: string }) => {
         setIsOpen(false);
     };
 
-    // if user presses escape key, close form
     useEffect(() => {
         const handleEscape = (event: KeyboardEvent) => {
             if (event.key === 'Escape') {
@@ -45,7 +45,7 @@ const CreateClass = ({ username }: { username: string }) => {
                 const errorText = await response.text();
                 throw new Error(`Error creating class: ${errorText}`);
             }
-            
+
             closeForm();
             router.refresh();
         } catch (error) {
@@ -53,47 +53,127 @@ const CreateClass = ({ username }: { username: string }) => {
         }
     };
 
+    useEffect(() => {
+        if (isOpen) {
+            const timer = setTimeout(() => setIsAnimating(true), 10);
+            return () => clearTimeout(timer);
+        } else {
+            setIsAnimating(false);
+        }
+    }, [isOpen]);
+
     return (
         <div className={isOpen ? 'relative' : ''}>
-            <button onClick={onClick} className="text-2xl font-bold hover:opacity-50 transition-opacity">+</button>
+            <button 
+                onClick={onClick} 
+                className="bg-[#252525] hover:bg-[#3a3a3a] text-white rounded-full w-10 h-10 flex items-center justify-center text-3xl transition-colors duration-150"
+            >
+                +
+            </button>
             {isOpen && (
                 <>
                     <div
-                        className="fixed inset-0 bg-black opacity-30 z-0"
+                        className={`fixed inset-0 bg-black z-0 transition-opacity duration-150
+                                    ${isAnimating ? 'opacity-50' : 'opacity-0'}`}
                         onClick={closeForm}
                     ></div>
                     <div
-                        className="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-sm backdrop-brightness-50"
+                        className={`fixed inset-0 flex items-center justify-center z-50 
+                                    transition-all duration-150 ease-in-out
+                                    ${isAnimating
+                                ? 'backdrop-blur-sm backdrop-brightness-50'
+                                : 'backdrop-blur-none backdrop-brightness-100'}`}
                     >
-                        <div style={{ fontFamily: 'Raleway' }} className="flex flex-col bg-[#252525] p-6 rounded-md shadow-lg w-1/2">
-                            <button className="self-end hover:opacity-50 transition-opacity" onClick={closeForm}>x</button>
+                        <div
+                            style={{ fontFamily: 'Raleway' }}
+                            className={`flex flex-col bg-[#252525] p-8 rounded-lg shadow-2xl w-full max-w-md
+                                        transition-all duration-150 ease-in-out
+                                        ${isAnimating
+                                    ? 'opacity-100 scale-100'
+                                    : 'opacity-0 scale-90'}`}
+                        >
+                            <button 
+                                className="self-end text-gray-400 hover:text-gray-200 transition-colors duration-150" 
+                                onClick={closeForm}
+                            >
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                            <h2 className="text-2xl font-bold mb-6 text-center text-white">Create New Class</h2>
                             <form
                                 onSubmit={handleSubmit}
                                 method="post"
-                                className="flex flex-col gap-2 m-4"
+                                className="flex flex-col gap-4"
                             >
                                 <input type="hidden" name="username" value={username} />
 
-                                <label htmlFor="classCode">Class Code: </label>
-                                <input className="rounded-md p-1" type="text" name="classCode" required={true} placeholder='(e.g. CS336) required' />
-
-                                <label htmlFor="className">Class Name: </label>
-                                <input className="rounded-md p-1" type="text" name="className" required={true} placeholder='required' />
-
-                                <label htmlFor="professor">Professor: </label>
-                                <input className="rounded-md p-1" type="text" name="professor" required={true} placeholder='required' />
-
-                                <label htmlFor="location">Location: </label>
-                                <input className="rounded-md p-1" type="text" name="location" required={true} placeholder='required' />
-
-                                <label htmlFor="meeting">Meeting Schedule: </label>
-                                <input className="rounded-md p-1" type="text" name="meeting" required={true} placeholder='(e.g. TuTh, 3:10-5:40PM) required' />
-
-                                <div className="border rounded-xl p-2 self-center w-fit mt-4">
-                                    <button type="submit" className="hover:opacity-50 transition-opacity">
-                                        Create Class
-                                    </button>
+                                <div className="flex flex-col">
+                                    <label htmlFor="classCode" className="mb-2 font-medium text-gray-300">Class Code</label>
+                                    <input 
+                                        id="classCode"
+                                        className="rounded-md p-3 border border-gray-600 bg-[#3a3a3a] text-white focus:ring-2 focus:ring-[#454545] focus:border-transparent transition-all duration-150" 
+                                        type="text" 
+                                        name="classCode" 
+                                        required={true} 
+                                        placeholder='e.g. CS336'
+                                    />
                                 </div>
+
+                                <div className="flex flex-col">
+                                    <label htmlFor="className" className="mb-2 font-medium text-gray-300">Class Name</label>
+                                    <input 
+                                        id="className"
+                                        className="rounded-md p-3 border border-gray-600 bg-[#3a3a3a] text-white focus:ring-2 focus:ring-[#454545] focus:border-transparent transition-all duration-150" 
+                                        type="text" 
+                                        name="className" 
+                                        required={true} 
+                                        placeholder='Enter class name'
+                                    />
+                                </div>
+
+                                <div className="flex flex-col">
+                                    <label htmlFor="professor" className="mb-2 font-medium text-gray-300">Professor</label>
+                                    <input 
+                                        id="professor"
+                                        className="rounded-md p-3 border border-gray-600 bg-[#3a3a3a] text-white focus:ring-2 focus:ring-[#454545] focus:border-transparent transition-all duration-150" 
+                                        type="text" 
+                                        name="professor" 
+                                        required={true} 
+                                        placeholder='Enter professor name'
+                                    />
+                                </div>
+
+                                <div className="flex flex-col">
+                                    <label htmlFor="location" className="mb-2 font-medium text-gray-300">Location</label>
+                                    <input 
+                                        id="location"
+                                        className="rounded-md p-3 border border-gray-600 bg-[#3a3a3a] text-white focus:ring-2 focus:ring-[#454545] focus:border-transparent transition-all duration-150" 
+                                        type="text" 
+                                        name="location" 
+                                        required={true} 
+                                        placeholder='Enter class location'
+                                    />
+                                </div>
+
+                                <div className="flex flex-col">
+                                    <label htmlFor="meeting" className="mb-2 font-medium text-gray-300">Meeting Schedule</label>
+                                    <input 
+                                        id="meeting"
+                                        className="rounded-md p-3 border border-gray-600 bg-[#3a3a3a] text-white focus:ring-2 focus:ring-[#454545] focus:border-transparent transition-all duration-150" 
+                                        type="text" 
+                                        name="meeting" 
+                                        required={true} 
+                                        placeholder='e.g. TuTh, 3:10-5:40PM'
+                                    />
+                                </div>
+
+                                <button 
+                                    type="submit" 
+                                    className="mt-4 bg-[#3a3a3a] hover:bg-[#454545] text-white font-bold py-3 px-4 rounded-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-[#454545] focus:ring-opacity-50"
+                                >
+                                    Create Class
+                                </button>
                             </form>
                         </div>
                     </div>

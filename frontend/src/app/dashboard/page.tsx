@@ -42,7 +42,10 @@ const Dashboard = async () => {
             />
             <div className="flex flex-col items-center m-16">
                 <DashboardGreeting displayName={displayName} />
-                <div className="flex flex-row items-center justify-between w-3/5 mt-16">
+                <div
+                    style={{ fontFamily: 'Raleway' }}
+                    className="flex flex-row items-center justify-between w-3/5 mt-16"
+                >
                     <h1 className="text-2xl font-bold">Classes</h1>
                     <CreateClass username={username} />
                 </div>
@@ -52,7 +55,7 @@ const Dashboard = async () => {
                             key={classID}
                             classID={classID} // seems redundant but key can't be used in Link href
                             authenticatedUser={username}
-                            classInfo={classInfo}
+                            classInfo={classInfo as { classCode: string; className: string; creatorUsername: string; location: string; meeting: string; professor: string; usersWithAccess: string[]; }}
                         />
                     ))}
                 </ul>
