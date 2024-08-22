@@ -415,3 +415,28 @@ func getNotesMetadataHelper(notesSubcollection *firestore.CollectionRef, ctx con
 	
 	return notesMetadata, nil
 }
+
+func AddNoteToClass(classID string, noteName string, username string, firestoreClient *firestore.Client, ctx context.Context) error {
+	ref := firestoreClient.Collection("classes").Doc(classID).Collection("notes").Doc(noteName)
+	
+	_, err := ref.Set(ctx, map[string]interface{}{
+		"createdBy": username,
+		"createdDate": firestore.ServerTimestamp,
+		"lastUpdated": firestore.ServerTimestamp,
+		"note": "",
+	})
+	if err != nil {
+		return err
+	}	
+
+	return nil
+}
+
+func DeleteNoteFromClass(classID string, noteName string, firestoreClient *firestore.Client, ctx context.Context) error {
+	_, err := firestoreClient.Collection("classes").Doc(classID).Collection("notes").Doc(noteName).Delete(ctx)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

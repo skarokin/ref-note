@@ -104,7 +104,7 @@ const ClassComponent = ({ username }: { username: string }) => {
                             {classData?.classCode}
                         </h3>
                     </div>
-                    <ManageClass classID={classID} />
+                    <ManageClass classID={classID} username={username} creatorUsername={classData.creatorUsername} />
                 </div>
                 <hr className="border rounded-md my-2" />
                 <div>
@@ -113,7 +113,7 @@ const ClassComponent = ({ username }: { username: string }) => {
                             onClick={() => setOpenDetails(!openDetails)}
                             className="font-bold hover:cursor-pointer hover:opacity-50 transition-opacity grow-0 basis-1/6"
                         >
-                            {openDetails ? 'Hide' : 'Show Details'}
+                            {openDetails ? 'Hide' : 'More Details'}
                         </p>
                         <button
                             onClick={() => setOpenDetails(!openDetails)}
@@ -123,7 +123,7 @@ const ClassComponent = ({ username }: { username: string }) => {
                         </button>
                     </div>
                     {openDetails &&
-                        <div className="transition duration-500 ease-in-out">
+                        <div>
                             <span className="font-bold">Creator: </span><span>{classData?.creatorUsername}</span>
                             <p className="font-bold overflow-hidden whitespace-nowrap text-ellipsis">
                                 Location: <span className="font-normal">{classData?.location}</span>
@@ -147,22 +147,23 @@ const ClassComponent = ({ username }: { username: string }) => {
                 </div>
                 <div className="flex flex-row items-center justify-between mt-16">
                     <h1 className="text-2xl font-bold">Notes</h1>
-                    <CreateNote classID={classID} />
+                    <CreateNote classID={classID} username={username} />
                 </div>
-                {/* super temp: just display notes as a <ul>. later, an actual card will be made for it */}
-                <ul>
-                    {Object.keys(notesMetadata).map((noteName) => {
-                        const noteMetadata = notesMetadata[noteName];
-                        return (
-                            <NoteCard
-                                key={noteName}
-                                classID={classID}
-                                noteName={noteName}
-                                noteMetadata={noteMetadata}
-                            />
-                        );
-                    })}
-                </ul>
+                {notesMetadata &&
+                    <ul>
+                        {Object.keys(notesMetadata).map((noteName) => {
+                            const noteMetadata = notesMetadata[noteName];
+                            return (
+                                <NoteCard
+                                    key={noteName}
+                                    classID={classID}
+                                    noteName={noteName}
+                                    noteMetadata={noteMetadata}
+                                />
+                            );
+                        })}
+                    </ul>
+                }
             </div>
         );
     } else if (!classData.usersWithAccess.includes(username)) {

@@ -1,25 +1,22 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTrash } from '@fortawesome/free-solid-svg-icons';
 
-const CreateNote = ({
+const DeleteNote = ({
     classID,
-    username
+    noteName,
 }: {
     classID: string;
-    username: string;
+    noteName: string;
 }) => {
-    
-    const [message, setMessage] = useState('');
-    const [isOpen, setIsOpen] = useState(false);
+    const [isOpen, setIsOpen] = useState<boolean>(false);
+    const [message, setMessage] = useState<string>('');
+    const dropdownRef = useRef<HTMLDivElement>(null);
+    const buttonRef = useRef<HTMLButtonElement>(null);
 
-    const onClick = () => {
-        setIsOpen(!isOpen);
-    };
-
-    const closeForm = () => {
-        setIsOpen(false);
-    };
+    const closeForm = () => setIsOpen(false);
 
     // if user presses escape key, close form
     useEffect(() => {
@@ -36,23 +33,19 @@ const CreateNote = ({
         };
     }, []);
 
-    // temp: createNote endpoint not implemented yet 
-    // if this component was mounted, user has access to class so no need for further auth check
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         const form = event.currentTarget;
         const formData = new FormData(form);
 
-        const noteName = formData.get('noteName') as string;
-        if (noteName.includes(' ')) {
-            setMessage('Note name cannot contain spaces');
+        if (formData.get('newNoteName') !== noteName) {
+            setMessage('Note name does not match');
             return;
         }
 
         try {
-            const response = await fetch('http://localhost:8000/createNote', {
-                method: 'POST',
-                body: formData,
+            const response = await fetch(`http://localhost:8000/deleteNote/${classID}/${noteName}`, {
+                method: 'DELETE',
             });
 
             if (!response.ok) {
@@ -62,14 +55,42 @@ const CreateNote = ({
                 closeForm();
                 window.location.reload();
             }
+
         } catch (error) {
             console.error('Error:', error);
         }
     };
 
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (
+                dropdownRef.current &&
+                !dropdownRef.current.contains(event.target as Node) &&
+                buttonRef.current &&
+                !buttonRef.current.contains(event.target as Node)
+            ) {
+                setIsOpen(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
+
     return (
-        <div className={isOpen ? 'relative' : ''}>
-            <button onClick={onClick} className="text-2xl font-bold hover:opacity-50 transition-opacity">+</button>
+        <div>
+            <button
+                ref={buttonRef}
+                onClick={() => setIsOpen(!isOpen)}
+                className="border-4 border-[#252525] rounded-full hover:opacity-50 transition-opacity"
+            >
+                <div className="flex items-center gap-2">
+                    <FontAwesomeIcon icon={faTrash} />
+                    Delete Note
+                </div>
+            </button>
             {isOpen && (
                 <>
                     <div
@@ -87,14 +108,13 @@ const CreateNote = ({
                                 className="flex flex-col gap-2 m-4"
                             >
                                 <input type="hidden" name="classID" value={classID} />
-                                <input type="hidden" name="username" value={username} />
 
-                                <label htmlFor="Note Name">Note Name: </label>
-                                <input className="rounded-md p-1" type="text" name="noteName" required={true} placeholder='required' />
+                                <label htmlFor="Delete Note">Type note name to confirm deletion</label>
+                                <input className="rounded-md p-1" type="text" name="newNoteName" required={true} placeholder={noteName} />
 
                                 <div className="border rounded-xl p-2 self-center w-fit mt-4">
                                     <button type="submit" className="hover:opacity-50 transition-opacity">
-                                        Create Note
+                                        Delete Note
                                     </button>
                                 </div>
                             </form>
@@ -107,4 +127,4 @@ const CreateNote = ({
     );
 };
 
-export default CreateNote;
+export default DeleteNote;

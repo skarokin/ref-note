@@ -24,6 +24,7 @@ const Dashboard = async () => {
             <h1>
                 Could not fetch dashboard for {username}.
                 It is possible that a class they have access to does not exist.
+                Contact the developer if this issue persists.
             </h1>
         );
     }
