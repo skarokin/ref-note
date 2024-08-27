@@ -1,5 +1,7 @@
 "use server"
+
 import { signIn, signOut } from '@/auth';
+import { Session } from 'next-auth';
 
 export async function handleLogin(formData: FormData) {
     const action = formData.get('action')?.toString(); 
@@ -24,4 +26,11 @@ export async function getClassCreator(classID: string) {
     const res = await fetch("http://localhost:8000/getClassCreator/" + classID);
     const data = await res.json();
     return data as string;
+}
+
+// TODO: Make EVERY client side call to Go server use a function within this file
+// and use this function to extract username for authentication checks
+function getUsernameFromSession(session: Session) {
+    // @ts-ignore (interface extending Session but typescript doesnt see it and thinks username does not exist)
+    return session.user.username;
 }

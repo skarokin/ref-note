@@ -41,7 +41,7 @@ func (s *APIServer) Run() error {
 
 	// create new CORS handler
 	c := cors.New(cors.Options{
-        AllowedOrigins: []string{"http://localhost:3000", "https://refnote.app", "https://www.refnote.app"},  // Allow your Next.js app origin
+        AllowedOrigins: []string{"http://localhost:3000", "http://localhost:5173", "https://refnote.app", "https://www.refnote.app"},  // Allow your Next.js app origin
         AllowedMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
         AllowedHeaders: []string{"*"},
         AllowCredentials: true,

@@ -440,3 +440,18 @@ func DeleteNoteFromClass(classID string, noteName string, firestoreClient *fires
 
 	return nil
 }
+
+func UpdateNoteInClass(classID string, noteName string, newNoteContent string, firestoreClient *firestore.Client, ctx context.Context) error {
+	_, err := firestoreClient.Collection("classes").Doc(classID).Collection("notes").Doc(noteName).Update(ctx, []firestore.Update{
+		{
+			Path: "note",
+			Value: newNoteContent,
+		},
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+	
+}

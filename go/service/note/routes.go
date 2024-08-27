@@ -1,17 +1,19 @@
 package note
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"strings"
-	"encoding/json"
 
 	"github.com/gorilla/mux"
 	// // "google.golang.org/grpc/codes"
 	// // "google.golang.org/grpc/status"
 	"cloud.google.com/go/firestore"
 	// "google.golang.org/api/iterator"
+	"github.com/akuwuh/ref-note/types"
 	"github.com/akuwuh/ref-note/utils"
+	// "github.com/akuwuh/ref-note/types"
 )
 
 type Handler struct {
@@ -28,6 +30,7 @@ func (h *Handler) RegisterRoutes(router *mux.Router) {
 	router.HandleFunc("/createNote", h.CreateNote).Methods("POST")
 	router.HandleFunc("/deleteNote/{classID}/{noteName}", h.DeleteNote).Methods("DELETE").Name("deleteNote")
 	router.HandleFunc("/getNote/{classID}/{noteName}", h.GetNote).Methods("GET").Name("getNote")
+	router.HandleFunc("/updateNote", h.UpdateNote).Methods("POST")
 }
 
 func (h *Handler) CreateNote(w http.ResponseWriter, r *http.Request) {
@@ -97,9 +100,12 @@ func (h *Handler) GetNote(w http.ResponseWriter, r *http.Request) {
 	noteName := vars["noteName"]
 	username := r.URL.Query().Get("username")
 
+	fmt.Println("Attempting to get note ", noteName, " for class ", classID, " for user ", username)
+
 	// first, check if user has access to class ID
 	classesWithAccessTo, err := utils.GetClassesWithAccessTo(username, h.firestoreClient, r.Context())
 	if err != nil {
+		fmt.Println("Error getting classes with access to: ", err)
 		http.Error(w, fmt.Sprintf("Error getting classes with access to: %v", err), http.StatusInternalServerError)
 		return
 	}
@@ -112,6 +118,7 @@ func (h *Handler) GetNote(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !hasAccess {
+		fmt.Println("User does not have access to class ", classID)
 		http.Error(w, "User does not have access to class", http.StatusUnauthorized)
 		return
 	}
@@ -119,6 +126,7 @@ func (h *Handler) GetNote(w http.ResponseWriter, r *http.Request) {
 	// then, return note if exists
 	noteContent, err := h.firestoreClient.Collection("classes").Doc(classID).Collection("notes").Doc(noteName).Get(r.Context())
 	if err != nil {
+		fmt.Println("Error getting note: ", err)
 		http.Error(w, fmt.Sprintf("Error getting note: %v", err), http.StatusInternalServerError)
 		return
 	}
@@ -128,4 +136,33 @@ func (h *Handler) GetNote(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"note": noteContent.Data()["note"],
 	})
+}
+
+// assumed that if a user can call this, they have access to the classID
+func (h *Handler) UpdateNote(w http.ResponseWriter, r *http.Request) {
+	var updateNoteReq types.UpdateNoteReq
+	err := json.NewDecoder(r.Body).Decode(&updateNoteReq)
+	if err != nil {
+		fmt.Println("Error decoding request: ", err)
+		http.Error(w, fmt.Sprintf("Error decoding request: %v", err), http.StatusBadRequest)
+		return
+	}
+
+	fmt.Println(updateNoteReq)
+	
+	classID := updateNoteReq.ClassID
+	noteName := updateNoteReq.NoteName
+	newNoteContent := updateNoteReq.NewNoteContent
+
+	fmt.Println("Attempting to update note ", noteName, " for class ", classID)
+
+	err = utils.UpdateNoteInClass(classID, noteName, newNoteContent, h.firestoreClient, r.Context())
+	if err != nil {
+		fmt.Println("Error updating note in class: ", err)
+		http.Error(w, fmt.Sprintf("Error updating note in class: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+
 }
