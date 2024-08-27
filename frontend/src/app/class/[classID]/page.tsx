@@ -11,12 +11,13 @@ const Class = async () => {
     if (!session?.user) {
         redirect('/unauthorized')
     }
-
+    
     // @ts-ignore
-    const username = session?.user?.username!;
-
-    // @ts-ignore
-    const displayName = await getDisplayName(session?.user?.username!);
+    let displayName;
+    if (session?.user) {
+        displayName = await getDisplayName(session);
+    }
+    
     const pfp = session?.user?.image!;
 
     // attempts to render the client-side component; if user is not allowed then display 'Acess Denied'
@@ -27,7 +28,7 @@ const Class = async () => {
                 pfp={pfp}
             />
             <div className="flex flex-col items-center m-16">
-                <ClassComponent username={username} />
+                <ClassComponent session={session} />
             </div>
         </>
     );

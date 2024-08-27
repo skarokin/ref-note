@@ -1,14 +1,15 @@
 "use client";
 
 import { useRouter } from 'next/navigation';
+import { Session } from 'next-auth';
 
 const ManageClass = ({
     classID,
-    username,
+    session,
     creatorUsername
 }: {
     classID: string;
-    username: string;
+    session: Session;
     creatorUsername: string;
 }) => {
     const router = useRouter();
@@ -16,7 +17,8 @@ const ManageClass = ({
     const leaveClass = async () => {
         const formData = new FormData();
         formData.append("classID", classID);
-        formData.append("usernameToRemove", username);
+        // @ts-ignore
+        formData.append("usernameToRemove", session.user.username);
 
         const res = await fetch("http://localhost:8000/removeUserFromClass", {
             method: "POST",
@@ -28,7 +30,8 @@ const ManageClass = ({
         }
     }
 
-    if (username === creatorUsername) {
+    // @ts-ignore
+    if (session.user.username === creatorUsername) {
         return (
             <button
                 className="hover:opacity-50 transition-opacity"

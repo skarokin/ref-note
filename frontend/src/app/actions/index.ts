@@ -12,7 +12,9 @@ export async function handleLogout() {
   await signOut({ redirectTo: "/" });
 }
 
-export async function getDisplayName(username: string) {
+export async function getDisplayName(session: Session) {
+    // @ts-ignore
+    const username = session?.user?.username;
     const res = await fetch("http://localhost:8000/getDisplayName/" + username);
     if (!res.ok) {
         throw new Error("Failed to fetch display name");
@@ -22,15 +24,70 @@ export async function getDisplayName(username: string) {
     return data['displayName'];
 }
 
-export async function getClassCreator(classID: string) {
+export async function getClassCreator(session: Session, classID: string) {
+    // @ts-ignore
+    const username = session?.user?.username;
     const res = await fetch("http://localhost:8000/getClassCreator/" + classID);
-    const data = await res.json();
-    return data as string;
+    const creatorUsername = await res.json();
+    if (username != creatorUsername) {
+        throw new Error("User does not have access to this class");
+    }
+    return creatorUsername;
 }
 
-// TODO: Make EVERY client side call to Go server use a function within this file
-// and use this function to extract username for authentication checks
-function getUsernameFromSession(session: Session) {
-    // @ts-ignore (interface extending Session but typescript doesnt see it and thinks username does not exist)
-    return session.user.username;
+// dashboard page
+export async function signInDashboard(session: Session) {
+    // @ts-ignore
+    const username = session?.user?.username;
+    const res = await fetch(`http://localhost:8000/signin/${username}`);
+    if (!res.ok) {
+        throw new Error("Failed to sign in");
+    }
+    const data = await res.json();
+    return data['classesWithAccessTo'];
+}  
+
+// create class (in dashboard)
+export async function createClass(session: Session, formData: FormData) {
+    // @ts-ignore
+    const username = session?.user?.username;
+    formData.append("username", username);
+    const res = await fetch("http://localhost:8000/createClass", {
+        method: "POST",
+        body: formData,
+    });
+
+    if (!res.ok) {
+        throw new Error("Failed to create class");
+    }
+}
+
+export async function getUsername(session: Session) {
+    // @ts-ignore
+    return session?.user?.username;
+}
+
+export async function fetchClassData(session: Session, classID: string) {
+    // @ts-ignore
+    const username = session?.user?.username;
+    const res = await fetch(`http://localhost:8000/getClass/${classID}/${username}`);
+    if (!res.ok) {
+        throw new Error("Failed to fetch class data or user does not have access");
+    }
+    const data = await res.json();
+    return data;
+}
+
+export async function createNote(session: Session, formData: FormData) {
+    // @ts-ignore
+    const username = session?.user?.username;
+    formData.append("username", username);
+    const res = await fetch("http://localhost:8000/createNote", {
+        method: "POST",
+        body: formData,
+    });
+    
+    if (!res.ok) {
+        throw new Error("Failed to create note");
+    }
 }

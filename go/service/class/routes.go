@@ -23,7 +23,7 @@ func NewHandler(firestoreClient *firestore.Client) *Handler {
 }
 
 func (h *Handler) RegisterRoutes(router *mux.Router) {
-	router.HandleFunc("/getClass/{classID}", h.GetClass).Methods("GET").Name("getClass")
+	router.HandleFunc("/getClass/{classID}/{username}", h.GetClass).Methods("GET").Name("getClass")
 	router.HandleFunc("/createClass", h.CreateClass).Methods("POST")
 	router.HandleFunc("/getClassCreator/{classID}", h.GetClassCreator).Methods("GET").Name("getClassCreator")
 	router.HandleFunc("/changeClassCode", h.ChangeClassCode).Methods("POST")
@@ -39,6 +39,7 @@ func (h *Handler) RegisterRoutes(router *mux.Router) {
 func (h *Handler) GetClass(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	classID := vars["classID"]
+	username := vars["username"]
 
 	fmt.Println("Class ID:", classID)
 
@@ -56,6 +57,22 @@ func (h *Handler) GetClass(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fmt.Println("Class found:", classDoc.Data())
+
+	// check if user calling this endpoint has access to the class
+	hasAccess := false
+	usersWithAccess := classDoc.Data()["usersWithAccess"].([]interface {})
+	for _, user := range usersWithAccess {
+		if user.(string) == username {
+			hasAccess = true
+			break
+		}
+	}
+
+	if !hasAccess {
+		fmt.Println("User does not have access to class")
+		http.Error(w, "User does not have access to class", http.StatusForbidden)
+		return
+	}
 
 	// class exists, now get notes for class and attach to response
 	notesMetadata, err := utils.GetNotesMetadata(classID, h.firestoreClient, r.Context())

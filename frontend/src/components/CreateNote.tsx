@@ -1,13 +1,15 @@
 "use client";
 
+import { Session } from 'next-auth';
 import { useState, useEffect } from 'react';
+import { createNote } from '@/app/actions';
 
 const CreateNote = ({
     classID,
-    username
+    session
 }: {
     classID: string;
-    username: string;
+    session: Session;
 }) => {
     const [message, setMessage] = useState('');
     const [isOpen, setIsOpen] = useState(false);
@@ -47,21 +49,29 @@ const CreateNote = ({
         }
 
         try {
-            const response = await fetch('http://localhost:8000/createNote', {
-                method: 'POST',
-                body: formData,
-            });
-
-            if (!response.ok) {
-                const errorText = await response.text();
-                setMessage(errorText);
-            } else {
-                closeForm();
-                window.location.reload();
-            }
+            await createNote(session, formData);
+            closeForm();
+            window.location.reload();
         } catch (error) {
-            console.error('Error:', error);
+            setMessage("Something went wrong. Please try again.");
         }
+
+        // try {
+        //     const response = await fetch('http://localhost:8000/createNote', {
+        //         method: 'POST',
+        //         body: formData,
+        //     });
+
+        //     if (!response.ok) {
+        //         const errorText = await response.text();
+        //         setMessage(errorText);
+        //     } else {
+        //         closeForm();
+        //         window.location.reload();
+        //     }
+        // } catch (error) {
+        //     console.error('Error:', error);
+        // }
     };
 
     useEffect(() => {
@@ -118,7 +128,6 @@ const CreateNote = ({
                                 className="flex flex-col gap-4"
                             >
                                 <input type="hidden" name="classID" value={classID} />
-                                <input type="hidden" name="username" value={username} />
 
                                 <div className="flex flex-col">
                                     <label htmlFor="noteName" className="mb-2 font-medium text-gray-300">Note Name</label>

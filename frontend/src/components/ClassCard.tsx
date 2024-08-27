@@ -1,15 +1,18 @@
 "use client";
+
 import Link from 'next/link';
+import { Session } from 'next-auth';
+import { getUsername } from '@/app/actions';
 
 const ClassCard = ({
     key,
     classID,
-    authenticatedUser,
+    session,
     classInfo
 }: {
     key: string;
     classID: string;
-    authenticatedUser: string;
+    session: Session;
     classInfo: {
         classCode: string;
         className: string;
@@ -21,6 +24,9 @@ const ClassCard = ({
     }
 }) => {
     const { classCode, className, creatorUsername, location, meeting, professor, usersWithAccess } = classInfo;
+
+    // @ts-ignore
+    const authenticatedUser = getUsername(session);
 
     return (
         <div style={{ fontFamily: 'Raleway' }} className="my-4 bg-[#252525] rounded-lg shadow-md p-6 w-full transition-all duration-150 hover:shadow-lg">

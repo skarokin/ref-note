@@ -12,9 +12,13 @@ import { faBan } from '@fortawesome/free-solid-svg-icons';
 // do another auth check here to see if user is authorized to make changes to their profile
 const Profile = async () => {
     const session = await auth();
-    // @ts-ignore
+    // @ts-ignore (no need to use Session object here; server-side component so user can't tamper with it)
     const username = session?.user?.username;
-    const displayName = await getDisplayName(username);
+    
+    let displayName;
+    if (session?.user) {
+        displayName = await getDisplayName(session);
+    }
 
     if (!session?.user) {
         redirect('/unauthorized');

@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { Session } from 'next-auth';
+import { createClass } from '@/app/actions';
 
-const CreateClass = ({ username }: { username: string }) => {
+const CreateClass = ({ session }: { session: Session }) => {
     const router = useRouter();
     const [isOpen, setIsOpen] = useState(false);
     const [isAnimating, setIsAnimating] = useState(false);
@@ -36,16 +38,7 @@ const CreateClass = ({ username }: { username: string }) => {
         const formData = new FormData(form);
 
         try {
-            const response = await fetch('http://localhost:8000/createClass', {
-                method: 'POST',
-                body: formData,
-            });
-
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(`Error creating class: ${errorText}`);
-            }
-
+            await createClass(session, formData);
             closeForm();
             router.refresh();
         } catch (error) {
@@ -106,8 +99,6 @@ const CreateClass = ({ username }: { username: string }) => {
                                 method="post"
                                 className="flex flex-col gap-4"
                             >
-                                <input type="hidden" name="username" value={username} />
-
                                 <div className="flex flex-col">
                                     <label htmlFor="classCode" className="mb-2 font-medium text-gray-300">Class Code</label>
                                     <input 

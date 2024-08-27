@@ -6,15 +6,19 @@ import { BlockNoteView } from "@blocknote/mantine";
 import "@blocknote/mantine/style.css";
 import * as Y from "yjs";
 import { WebsocketProvider } from "y-websocket";
+import { Session } from 'next-auth';
 
 const NoteComponent = ({
-    username,
+    session,
 }: {
-    username: string;
+    session: Session;
 }) => {
     const params = useParams();
     const classID = params.classID as string;
     const noteName = params.noteName as string;
+
+    // @ts-ignore
+    const username = session.user.username;
 
     const doc = new Y.Doc();
     // setup a yjs provider 

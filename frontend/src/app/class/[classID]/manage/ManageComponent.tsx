@@ -1,19 +1,20 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { getClassCreator } from "@/app/actions";
+import { getClassCreator, fetchClassData } from "@/app/actions";
 import { useParams, useRouter } from 'next/navigation';
 import ManageClassForm from '@/components/ManageClassForm';
 import ManageClassDeleteForm from '@/components/ManageClassDeleteForm';
 import ManageClassDeleteUserForm from '@/components/ManageClassDeleteUserForm';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBan } from '@fortawesome/free-solid-svg-icons';
+import { Session } from 'next-auth';
 
 const ManageComponent = ({
-    username,
+    session,
     displayName
 }: {
-    username: string;
+    session: Session;
     displayName: string;
 }) => {
     const [classCreator, setClassCreator] = useState<string>("");
@@ -37,9 +38,15 @@ const ManageComponent = ({
     // on mount, fetch class creator
     useEffect(() => {
         async function fetchClassCreator() {
-            const res = await getClassCreator(classID);
-            setClassCreator(res);
-            setIsLoading(false);
+            try {
+                const res = await getClassCreator(session, classID);
+                setClassCreator(res);
+                setIsLoading(false);
+            } catch (error) {
+                // if error, user is not authorized to manage this class
+                setIsLoading(false);
+                router.push('/unauthorized');
+            }
         }
 
         if (classID) {
@@ -49,23 +56,19 @@ const ManageComponent = ({
 
     // on mount, fetch class data
     useEffect(() => {
-        async function fetchClassData() {
-            const res = await fetch("http://localhost:8000/getClass/" + classID);
-            const data = await res.json();
-            setClassData(data['classData']);
+        async function getClassData() {
+            try {
+                const data = await fetchClassData(session, classID);
+                setClassData(data['classData']);
+            } catch (error) {
+                console.error('Error:', error);
+            }
         }
 
         if (classID) {
-            fetchClassData();
+            getClassData();
         }
     }, []);
-
-    // necessary; otherwise would always see 'unauthorized' since classCreator is initially empty
-    useEffect(() => {
-        if (!isLoading && classCreator !== username) {
-            router.push('/unauthorized');
-        }
-    }, [isLoading, classCreator, username]);
 
     if (isLoading) {
         return (
@@ -346,14 +349,14 @@ const ManageComponent = ({
                             {classData.usersWithAccess.map((user) => {
                                 return <option key={user} value={user}>{user}</option>;
                             })}
-                        </select>} 
+                        </select>}
                     />
                 </div>
                 <hr className="w-full border border-[#252525] my-4" />
                 <div className="flex flex-row justify-between w-full items-start">
                     <ManageClassDeleteForm
                         classID={classID}
-                        className={classData.className} 
+                        className={classData.className}
                     />
                 </div>
             </section>

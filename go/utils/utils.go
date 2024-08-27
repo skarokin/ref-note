@@ -447,6 +447,10 @@ func UpdateNoteInClass(classID string, noteName string, newNoteContent string, f
 			Path: "note",
 			Value: newNoteContent,
 		},
+		{
+			Path: "lastUpdated",
+			Value: firestore.ServerTimestamp,
+		},
 	})
 	if err != nil {
 		return err
