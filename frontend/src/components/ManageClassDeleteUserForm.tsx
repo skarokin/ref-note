@@ -22,7 +22,7 @@ const ManageClassDeleteUserForm = ({
         formData.append('classID', classID);
         formData.append('usernameToRemove', usernameToRemove);
 
-        const res = await fetch('http://localhost:8000/removeUserFromClass', {
+        const res = await fetch('https://ref-note-go-2hqz3n5toq-uk.a.run.app/removeUserFromClass', {
             method: 'POST',
             body: formData,
         });

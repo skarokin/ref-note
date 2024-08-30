@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"cloud.google.com/go/firestore"
-	"github.com/akuwuh/ref-note/utils"
+	"github.com/skarokin/ref-note/utils"
 	"github.com/gorilla/mux"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"

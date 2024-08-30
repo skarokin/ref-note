@@ -234,7 +234,7 @@ const closeConn = async (doc, conn, classID=undefined, noteName=undefined) => {
             // OUR EXTENSION: when last connection closes, save doc to db
             const uint8Doc = Y.encodeStateAsUpdate(doc);
             console.log('Trying to save doc to db');
-            const res = await fetch('http://localhost:8000/updateNote', {
+            const res = await fetch('https://ref-note-go-2hqz3n5toq-uk.a.run.app/updateNote', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -248,6 +248,8 @@ const closeConn = async (doc, conn, classID=undefined, noteName=undefined) => {
             });
             if (!res.ok) {
                 console.log('Something went wrong saving note to db');
+            } else {
+                console.log('Saved doc to db');
             }
         }
     }
@@ -294,15 +296,17 @@ exports.setupWSConnection = async (conn, req, { docName = (req.url || '').slice(
 
     // OUR EXTENSION: if first connection to this room, initialize document w/ db content
     // other connections will just sync to this connection
-    if (doc.conns.size === 1) {
+    if (doc.conns.size == 1) {
         // fetch db content w/ blob content from db
         const noteFromDB = new Y.Doc();
-        const res = await fetch(`http://localhost:8000/getNote/${classID}/${noteName}?username=${encodeURIComponent(username)}`);
+        const res = await fetch(`https://ref-note-go-2hqz3n5toq-uk.a.run.app/getNote/${classID}/${noteName}?username=${encodeURIComponent(username)}`);
         // if !res.ok here, its not that access is denied but some other problem
         if (!res.ok) {
             console.log('Something went wrong fetching note from db');
             closeConn(doc, conn);       // dont send clasID/noteName we dont wanna save this to db
         }
+
+        console.log('Fetched note from db');
 
         // the note content is stored as the string representation of a Uint8Array in the db
         // so, need to convert it back to Uint8Array
@@ -312,12 +316,6 @@ exports.setupWSConnection = async (conn, req, { docName = (req.url || '').slice(
         if (noteContent === '') {
             return;
         }
-        // if noteContent is not in proper format, close connection and return
-        if (!noteContent.includes(',')) {
-            console.log('Note content from db is not a Uint8Array');
-            closeConn(doc, conn, classID, noteName);
-            return;
-        }
 
         const noteContentUint8 = new Uint8Array(noteContent.split(',').map(Number));
 
@@ -325,6 +323,8 @@ exports.setupWSConnection = async (conn, req, { docName = (req.url || '').slice(
         Y.applyUpdate(noteFromDB, noteContentUint8);
         // Apply noteFromB to doc
         Y.applyUpdate(doc, Y.encodeStateAsUpdate(noteFromDB));
+
+        console.log('Applied update to doc');
     }
 
     // listen and reply to events

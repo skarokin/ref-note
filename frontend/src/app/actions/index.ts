@@ -15,7 +15,7 @@ export async function handleLogout() {
 export async function getDisplayName(session: Session) {
     // @ts-ignore
     const username = session?.user?.username;
-    const res = await fetch("http://localhost:8000/getDisplayName/" + username);
+    const res = await fetch("https://ref-note-go-2hqz3n5toq-uk.a.run.app/getDisplayName/" + username);
     if (!res.ok) {
         throw new Error("Failed to fetch display name");
     }
@@ -27,7 +27,7 @@ export async function getDisplayName(session: Session) {
 export async function getClassCreator(session: Session, classID: string) {
     // @ts-ignore
     const username = session?.user?.username;
-    const res = await fetch("http://localhost:8000/getClassCreator/" + classID);
+    const res = await fetch("https://ref-note-go-2hqz3n5toq-uk.a.run.app/getClassCreator/" + classID);
     const creatorUsername = await res.json();
     if (username != creatorUsername) {
         throw new Error("User does not have access to this class");
@@ -39,7 +39,7 @@ export async function getClassCreator(session: Session, classID: string) {
 export async function signInDashboard(session: Session) {
     // @ts-ignore
     const username = session?.user?.username;
-    const res = await fetch(`http://localhost:8000/signin/${username}`);
+    const res = await fetch(`https://ref-note-go-2hqz3n5toq-uk.a.run.app/signin/${username}`);
     if (!res.ok) {
         throw new Error("Failed to sign in");
     }
@@ -52,7 +52,7 @@ export async function createClass(session: Session, formData: FormData) {
     // @ts-ignore
     const username = session?.user?.username;
     formData.append("username", username);
-    const res = await fetch("http://localhost:8000/createClass", {
+    const res = await fetch("https://ref-note-go-2hqz3n5toq-uk.a.run.app/createClass", {
         method: "POST",
         body: formData,
     });
@@ -70,7 +70,7 @@ export async function getUsername(session: Session) {
 export async function fetchClassData(session: Session, classID: string) {
     // @ts-ignore
     const username = session?.user?.username;
-    const res = await fetch(`http://localhost:8000/getClass/${classID}/${username}`);
+    const res = await fetch(`https://ref-note-go-2hqz3n5toq-uk.a.run.app/getClass/${classID}/${username}`);
     if (!res.ok) {
         throw new Error("Failed to fetch class data or user does not have access");
     }
@@ -82,7 +82,7 @@ export async function createNote(session: Session, formData: FormData) {
     // @ts-ignore
     const username = session?.user?.username;
     formData.append("username", username);
-    const res = await fetch("http://localhost:8000/createNote", {
+    const res = await fetch("https://ref-note-go-2hqz3n5toq-uk.a.run.app/createNote", {
         method: "POST",
         body: formData,
     });

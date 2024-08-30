@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { Session } from 'next-auth';
 import { getUsername } from '@/app/actions';
+import { useState, useEffect } from 'react';
 
 const ClassCard = ({
     key,
@@ -25,8 +26,16 @@ const ClassCard = ({
 }) => {
     const { classCode, className, creatorUsername, location, meeting, professor, usersWithAccess } = classInfo;
 
-    // @ts-ignore
-    const authenticatedUser = getUsername(session);
+    const [authenticatedUser, setAuthenticatedUser] = useState<string>('');
+
+    useEffect(() => {
+        async function fetchUsernameFromSession() {
+            const res = await getUsername(session);
+            setAuthenticatedUser(res);
+        }
+
+        fetchUsernameFromSession();
+    }, []);
 
     return (
         <div style={{ fontFamily: 'Raleway' }} className="my-4 bg-[#252525] rounded-lg shadow-md p-6 w-full transition-all duration-150 hover:shadow-lg">

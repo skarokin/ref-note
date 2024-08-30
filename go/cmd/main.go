@@ -5,7 +5,7 @@ import (
 	"context"
 	"os"
 
-	"github.com/akuwuh/ref-note/cmd/api"
+	"github.com/skarokin/ref-note/cmd/api"
 	firebase "firebase.google.com/go"
 	"google.golang.org/api/option"
 )
@@ -46,8 +46,14 @@ func main() {
 
 	defer firestoreClient.Close()
 
-	// firestore emulator is on 8080 so use 8000 for API server
-	server := api.NewAPIServer(":8000", firestoreClient)
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+
+	// temp: firestore emulator is on 8080 so use 8000 for API server
+	// in prod, use Google Cloud Run's default PORT env variable
+	server := api.NewAPIServer(":" + port, firestoreClient)
 	if err := server.Run(); err != nil {
 		log.Fatal(err)
 	}

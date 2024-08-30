@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"encoding/json"
 
-	"github.com/akuwuh/ref-note/types"
+	"github.com/skarokin/ref-note/types"
+	"github.com/skarokin/ref-note/utils"
 	"github.com/gorilla/mux"
-	"github.com/akuwuh/ref-note/utils"
 	"cloud.google.com/go/firestore"
 )
 

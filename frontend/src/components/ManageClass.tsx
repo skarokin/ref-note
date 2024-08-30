@@ -20,7 +20,7 @@ const ManageClass = ({
         // @ts-ignore
         formData.append("usernameToRemove", session.user.username);
 
-        const res = await fetch("http://localhost:8000/removeUserFromClass", {
+        const res = await fetch("https://ref-note-go-2hqz3n5toq-uk.a.run.app/removeUserFromClass", {
             method: "POST",
             body: formData
         });

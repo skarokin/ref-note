@@ -7,13 +7,9 @@ import (
 	"strings"
 
 	"github.com/gorilla/mux"
-	// // "google.golang.org/grpc/codes"
-	// // "google.golang.org/grpc/status"
 	"cloud.google.com/go/firestore"
-	// "google.golang.org/api/iterator"
-	"github.com/akuwuh/ref-note/types"
-	"github.com/akuwuh/ref-note/utils"
-	// "github.com/akuwuh/ref-note/types"
+	"github.com/skarokin/ref-note/types"
+	"github.com/skarokin/ref-note/utils"
 )
 
 type Handler struct {
@@ -147,8 +143,6 @@ func (h *Handler) UpdateNote(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintf("Error decoding request: %v", err), http.StatusBadRequest)
 		return
 	}
-
-	fmt.Println(updateNoteReq)
 	
 	classID := updateNoteReq.ClassID
 	noteName := updateNoteReq.NoteName

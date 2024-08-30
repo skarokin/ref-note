@@ -2,7 +2,7 @@ const Footer = () => {
     return (
         <footer className="absolute bottom-2.5 text-xs/3 sm:text-xs/6 bottom-2 flex flex-col items-center">
 			<small>
-				<a href="https://github.com/akuwuh/ref-note" target="_blank" className="hover:underline">
+				<a href="https://github.com/skarokin/ref-note" target="_blank" className="hover:underline">
 					GitHub
 				</a>
 			</small>

@@ -91,7 +91,7 @@ const ManageComponent = ({
         formData.append('classCode', classCode);
 
         try {
-            const response = await fetch('http://localhost:8000/changeClassCode', {
+            const response = await fetch('https://ref-note-go-2hqz3n5toq-uk.a.run.app/changeClassCode', {
                 method: 'POST',
                 body: formData,
             });
@@ -121,7 +121,7 @@ const ManageComponent = ({
         formData.append('className', className);
 
         try {
-            const response = await fetch('http://localhost:8000/changeClassName', {
+            const response = await fetch('https://ref-note-go-2hqz3n5toq-uk.a.run.app/changeClassName', {
                 method: 'POST',
                 body: formData,
             });
@@ -151,7 +151,7 @@ const ManageComponent = ({
         formData.append('location', location);
 
         try {
-            const response = await fetch('http://localhost:8000/changeClassLocation', {
+            const response = await fetch('https://ref-note-go-2hqz3n5toq-uk.a.run.app/changeClassLocation', {
                 method: 'POST',
                 body: formData,
             });
@@ -181,7 +181,7 @@ const ManageComponent = ({
         formData.append('meeting', meeting);
 
         try {
-            const response = await fetch('http://localhost:8000/changeClassMeetingSchedule', {
+            const response = await fetch('https://ref-note-go-2hqz3n5toq-uk.a.run.app/changeClassMeetingSchedule', {
                 method: 'POST',
                 body: formData,
             });
@@ -211,7 +211,7 @@ const ManageComponent = ({
         formData.append('professor', professor);
 
         try {
-            const response = await fetch('http://localhost:8000/changeClassProfessor', {
+            const response = await fetch('https://ref-note-go-2hqz3n5toq-uk.a.run.app/changeClassProfessor', {
                 method: 'POST',
                 body: formData,
             });
@@ -241,7 +241,7 @@ const ManageComponent = ({
         formData.append('username', username);
 
         try {
-            const response = await fetch('http://localhost:8000/addUserToClass', {
+            const response = await fetch('https://ref-note-go-2hqz3n5toq-uk.a.run.app/addUserToClass', {
                 method: 'POST',
                 body: formData,
             });

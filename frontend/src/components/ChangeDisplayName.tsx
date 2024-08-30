@@ -27,7 +27,7 @@ const ChangeDisplayName = ({
             return;
         }
 
-        const response = await fetch('http://localhost:8000/changeDisplayName', {
+        const response = await fetch('https://ref-note-go-2hqz3n5toq-uk.a.run.app/changeDisplayName', {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

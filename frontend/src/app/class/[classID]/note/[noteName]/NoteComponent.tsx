@@ -7,6 +7,7 @@ import "@blocknote/mantine/style.css";
 import * as Y from "yjs";
 import { WebsocketProvider } from "y-websocket";
 import { Session } from 'next-auth';
+import { useEffect } from 'react';
 
 const NoteComponent = ({
     session,
@@ -22,7 +23,7 @@ const NoteComponent = ({
 
     const doc = new Y.Doc();
     // setup a yjs provider 
-    const provider = new WebsocketProvider(`ws://localhost:3030`, `${username}/${classID}/${noteName}`, doc);
+    const provider = new WebsocketProvider(`wss://ref-note-ws-2hqz3n5toq-uc.a.run.app`, `${username}/${classID}/${noteName}`, doc);
     provider.on('status', (event: { status: any; }) => {
         console.log(event.status) // logs "connected" or "disconnected"
     })

@@ -19,7 +19,7 @@ const ManageClassDeleteForm = ({
     const router = useRouter();
 
     const deleteClass = async () => {
-        const res = await fetch(`http://localhost:8000/deleteClass/${classID}`, {
+        const res = await fetch(`https://ref-note-go-2hqz3n5toq-uk.a.run.app/deleteClass/${classID}`, {
             method: 'DELETE'
         });
 
