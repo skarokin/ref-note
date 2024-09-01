@@ -3,16 +3,7 @@ import Google from "next-auth/providers/google"
 
 const config = {
     providers: [    
-        Google({
-            clientId: process.env.AUTH_GOOGLE_ID,
-            clientSecret: process.env.AUTH_GOOGLE_SECRET,
-            authorization: {
-                params: {
-                  redirect_uri: `${process.env.AUTH_URL}/api/auth/callback/google`,
-                },
-            },
-            checks: ["state"],
-        }),
+        Google,
     ],
     // we want to have username field in the session object so we must extend the User type
     callbacks: {
