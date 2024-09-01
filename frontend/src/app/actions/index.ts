@@ -4,7 +4,8 @@ import { signIn, signOut } from '@/auth';
 import { Session } from 'next-auth';
 
 export async function handleLogin(formData: FormData) {
-    const action = formData.get('action')?.toString(); 
+    const action = formData.get('action')?.toString();
+    console.log(action);
     await signIn(action, { redirectTo: `/dashboard` });
 }
 

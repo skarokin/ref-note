@@ -6,9 +6,6 @@ import HeaderManageClass from '@/components/HeaderManageClass';
 // this is necessary to avoid a build error
 // see https://github.com/yjs/yjs/issues/438#issuecomment-1271063127
 import dynamic from 'next/dynamic';
-export const NoteComponent = dynamic(() => import('./NoteComponent'), {
-    ssr: false,
-});
 
 const Note = async () => {
     const session = await auth();
@@ -21,6 +18,10 @@ const Note = async () => {
         displayName = await getDisplayName(session);
     }
     const pfp = session?.user?.image!;
+
+    const NoteComponent = dynamic(() => import('./NoteComponent'), {
+        ssr: false,
+    });
 
     if (session?.user) {
         return (

@@ -7,7 +7,6 @@ import "@blocknote/mantine/style.css";
 import * as Y from "yjs";
 import { WebsocketProvider } from "y-websocket";
 import { Session } from 'next-auth';
-import { useEffect } from 'react';
 
 const NoteComponent = ({
     session,
