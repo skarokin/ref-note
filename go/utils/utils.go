@@ -229,7 +229,7 @@ func createFirstNote(classID string, firestoreClient *firestore.Client, ctx cont
 		"createdBy": "system",
 		"createdDate": firestore.ServerTimestamp,
 		"lastUpdated": firestore.ServerTimestamp,
-		"note": "This is your first note! You can add collaborators by updating class settings.",
+		"note": "",
 	})
 	if err != nil {
 		return err

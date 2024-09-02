@@ -325,6 +325,7 @@ exports.setupWSConnection = async (conn, req, { docName = (req.url || '').slice(
         Y.applyUpdate(doc, Y.encodeStateAsUpdate(noteFromDB));
 
         console.log('Applied update to doc');
+        console.log('Doc content: ', doc.getXmlFragment('document-store').toJSON());
     }
 
     // listen and reply to events
