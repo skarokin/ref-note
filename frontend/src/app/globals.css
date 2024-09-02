@@ -16,6 +16,14 @@
   }
 }
 
+/* force dark mode even if the user prefers light mode */
+@media (prefers-color-scheme: light) {
+    :root {
+        --foreground-rgb: 255, 255, 255;
+        --background-color: #191919;
+    }
+}
+
 body {
   color: rgb(var(--foreground-rgb));
   background: var(--background-color);
