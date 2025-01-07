@@ -10,7 +10,7 @@ const DashboardGreeting = ({
     return (
         <h1 
             style={{ fontFamily: 'Literata' }}
-            className="text-xl sm:text-3xl">
+            className="text-xl sm:text-3xl text-ellipsis">
             Good {timeOfDay}, {displayName}
         </h1>
     );
